@@ -1,0 +1,52 @@
+ Scrum Meeting – Week 8
+
+ Attendees
+- Amro 
+- Claire
+- Vin
+
+---
+
+Discussion
+The team met to review the expectations for Milestone 3 and plan the backend implementation of the system. We discussed the development workflow that will be used throughout the project, including the use of feature branches, pull requests, code reviews, and automated testing.
+
+The team reviewed the architecture decisions made in Milestone 2 and confirmed that the backend implementation will follow the layered architecture consisting of routers, services, and repositories.
+
+
+
+Progress Since Last Meeting
+- Backend project structure initialized in the repository.
+- Repository organized to reflect the system architecture defined in Milestone 2.
+- Development responsibilities divided among team members.
+- Team agreed on using GitHub issues, feature branches, and pull requests for all new development.
+
+
+Task Assignments
+
+Amro
+- Implement authentication system
+- Implement role-based access control (RBAC)
+- Set up Docker environment for backend deployment
+- Configure GitHub Actions CI pipeline
+- Support backend infrastructure setup
+
+Claire
+- Implement restaurant and menu management functionality
+- Develop API endpoints related to restaurant and menu services
+- Write unit tests for menu and restaurant features
+
+Vin
+- Implement order management functionality
+- Implement order status updates and payment logic
+- Develop integration tests for order workflows
+
+
+
+Action Items
+- Create GitHub issues for each backend feature.
+- Ensure every pull request includes test cases.
+- Conduct code reviews for all pull requests before merging.
+- Continue following proper GitHub workflow and branching strategy.
+
+
+
