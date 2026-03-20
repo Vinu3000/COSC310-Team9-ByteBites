@@ -43,8 +43,5 @@ Tasks for This Sprint
 
 Notes
 
-Vin currently controls the repository. The team has requested multiple times that read and write access be granted so all members can contribute and use repository tools such as the project dashboard.
+The team has requested multiple times that read and write access be granted so all members can contribute and use repository tools such as the project dashboard.
 
-As of this meeting, those permissions have not yet been granted. This limits the team’s ability to manage the project dashboard and other GitHub collaboration tools.
-
-The team will follow up again to resolve this issue.
