@@ -1,29 +1,34 @@
-import jwt
-import os
-from fastapi import Depends, HTTPException
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from fastapi import Depends, Header, HTTPException
 from sqlalchemy.orm import Session
+import jwt
+
+from app.config import SECRET_KEY
 from app.database import get_db
 from app.repositories.user_repo import find_by_id
 
-SECRET_KEY = os.getenv("SECRET_KEY", "bytebites-dev-secret")
-bearer = HTTPBearer()
 
 def get_current_user(
-    credentials: HTTPAuthorizationCredentials = Depends(bearer),
-    db: Session = Depends(get_db)
+    authorization: str | None = Header(default=None),
+    db: Session = Depends(get_db),
 ):
-    token = credentials.credentials
-    try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
-    except jwt.ExpiredSignatureError:
-        raise HTTPException(status_code=401, detail="Token has expired")
-    except jwt.InvalidTokenError:
+    if not authorization:
+        raise HTTPException(status_code=401, detail="Missing token")
+
+    parts = authorization.split()
+    if len(parts) != 2 or parts[0].lower() != "bearer":
         raise HTTPException(status_code=401, detail="Invalid token")
 
-    # Look up the actual user from the database
-    user = find_by_id(db, payload["sub"])
-    if not user:
-        raise HTTPException(status_code=401, detail="User not found")
+    token = parts[1]
 
-    return {"id": user.id, "username": user.username, "role": user.role}
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
+        user_id = payload.get("user_id")
+        user = find_by_id(db, user_id)
+
+        if not user:
+            raise HTTPException(status_code=401, detail="User not found")
+
+        return user
+
+    except jwt.PyJWTError:
+        raise HTTPException(status_code=401, detail="Invalid token")
