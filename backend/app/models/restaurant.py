@@ -7,3 +7,4 @@ class Restaurant(Base):
     # ID is an integer from 1 to 100
     id = Column(Integer, primary_key=True)
     name = Column(String, nullable=False) 
+    category = Column(String, nullable=True)
