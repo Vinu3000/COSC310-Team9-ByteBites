@@ -2,40 +2,40 @@ from fastapi import APIRouter, status, HTTPException
 from typing import List, Dict
 from pydantic import BaseModel
 
-# --- Schemas ---
+# --- Simple Data Models ---
 
 class OrderCreate(BaseModel):
-    """Schema for placing a new order (Feat4-US1)."""
+    """Data required to place an order."""
     restaurant_id: int
     items: List[str]
     total_price: float
 
 class OrderResponse(BaseModel):
-    """Basic order info returned after creation."""
+    """Response showing the basic order info."""
     id: int
     status: str
     total_price: float
 
 class TrackingResponse(BaseModel):
-    """Detailed tracking info for the user (Feat5-US1)."""
+    """Response for user tracking (Feat5-US1)."""
     order_id: int
     status: str
     display_message: str
 
-# --- Mock Database ---
-# Using a global dictionary to store order state in memory.
+# --- In-Memory Database ---
+# We use a global dictionary to store orders during the test session.
 mock_orders_db: Dict[int, dict] = {}
 order_id_counter = 1
 
 router = APIRouter(tags=["Orders"])
 
-# --- Feature 4: Order Creation ---
+# --- Feature 4: Order Logic ---
 
 @router.post("/place", response_model=OrderResponse, status_code=status.HTTP_201_CREATED)
 async def place_order(payload: OrderCreate):
     """
-    Feat4-US1: As a user, I want to place an order from a restaurant.
-    Initial status is always 'PENDING'.
+    Feat4-US1: Create a new order. 
+    All new orders start with 'PENDING' status.
     """
     global order_id_counter
     
@@ -47,48 +47,16 @@ async def place_order(payload: OrderCreate):
         "status": "PENDING"
     }
     
+    # Save directly to the global dictionary
     mock_orders_db[order_id_counter] = new_order
     order_id_counter += 1
     return new_order
 
-# --- Feature 5: Delivery & Status Updates ---
-
 @router.put("/{order_id}/status")
-async def update_order_status(
-    order_id: int, 
-    new_status: str = None, 
-    status: str = None
-):
+async def update_order_status(order_id: int, new_status: str):
     """
-    Feat4-FR1 & Feat5-FR1: Update order/delivery status.
-    Compatible with both 'new_status' and 'status' query parameters.
-    """
-    if order_id not in mock_orders_db:
-        raise HTTPException(status_code=404, detail="Order not found")
-    
-    # Use whichever parameter was provided by the test script
-    final_status = new_status or status
-    
-    if not final_status:
-        raise HTTPException(status_code=400, detail="No status provided")
-
-    # FR1: Lock logic
-    if mock_orders_db[order_id]["status"] == "COMPLETED":
-        raise HTTPException(
-            status_code=403, 
-            detail="Order is completed and cannot be modified!"
-        )
-
-    # Force update the global mock database
-    mock_orders_db[order_id]["status"] = final_status
-    
-    return {"message": f"Order {order_id} updated to {final_status}"}
-
-@router.get("/{order_id}/tracking", response_model=TrackingResponse)
-async def get_tracking(order_id: int):
-    """
-    Feat5-US1: As a user, I want to see if my order is 'Out for Delivery'.
-    Returns a human-readable message based on the internal status.
+    Feat4-FR1: If status is 'COMPLETED', prevent any further changes.
+    This fulfills the requirement to lock finished orders.
     """
     if order_id not in mock_orders_db:
         raise HTTPException(
@@ -96,16 +64,40 @@ async def get_tracking(order_id: int):
             detail="Order not found"
         )
     
+    # Get current status from our mock database
+    current_status = mock_orders_db[order_id].get("status")
+
+    # If it is already COMPLETED, block the update with 403.
+    if current_status == "COMPLETED":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN, 
+            detail="Order is completed and cannot be modified!"
+        )
+
+    # Update the status in the global dictionary
+    mock_orders_db[order_id]["status"] = new_status
+    return {"message": f"Order {order_id} updated to {new_status}"}
+
+# --- Feature 5: Tracking Logic ---
+
+@router.get("/{order_id}/tracking", response_model=TrackingResponse)
+async def get_tracking(order_id: int):
+    """
+    Feat5-US1: Show tracking messages like 'Out for Delivery'.
+    """
+    if order_id not in mock_orders_db:
+        raise HTTPException(status_code=404, detail="Order not found")
+    
     current_status = mock_orders_db[order_id]["status"]
     
-    # Default message for PENDING or PREPARING
-    msg = "Your meal is being prepared with love!"
+    # Default message
+    msg = "Your meal is being prepared!"
     
-    # Specific message for Feat5-US1 requirement
+    # Special message for Feat5-US1 requirement
     if current_status == "OUT_FOR_DELIVERY":
-        msg = "Your driver is on the way! Get ready!"
-    elif current_status == "DELIVERED" or current_status == "COMPLETED":
-        msg = "Enjoy your meal! It has been delivered."
+        msg = "Your driver is on the way! Watch the door!"
+    elif current_status == "COMPLETED" or current_status == "DELIVERED":
+        msg = "Enjoy your meal! Delivery finished."
         
     return {
         "order_id": order_id,

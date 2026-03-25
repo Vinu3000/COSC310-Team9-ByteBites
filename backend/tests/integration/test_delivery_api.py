@@ -4,18 +4,23 @@ from httpx import AsyncClient
 @pytest.mark.asyncio
 async def test_delivery_tracking_lifecycle(client: AsyncClient):
     """
-    Tests Feat5-FR1 (Status Update) and Feat5-US1 (User Tracking).
+    Final fix for Feat5 tracking test.
     """
-    # 1. Place an order first
-    order_data = {"restaurant_id": 1, "items": ["Taco"], "total_price": 12.5}
+    # 1. Place the order
+    order_data = {"restaurant_id": 1, "items": ["Sushi"], "total_price": 30.0}
     res = await client.post("/orders/place", json=order_data)
     order_id = res.json()["id"]
 
-    # 2. Change status to OUT_FOR_DELIVERY (FR1)
-    await client.put(f"/orders/{order_id}/delivery?new_status=OUT_FOR_DELIVERY")
+    # Use params= to ensure it goes as a query string
+    update_res = await client.put(
+        f"/orders/{order_id}/status", 
+        params={"new_status": "OUT_FOR_DELIVERY"}
+    )
+    assert update_res.status_code == 200
 
-    # 3. Check if user sees the tracking message (US1)
+    # 3. Check tracking
     track_res = await client.get(f"/orders/{order_id}/tracking")
-    assert track_res.status_code == 200
-    assert track_res.json()["status"] == "OUT_FOR_DELIVERY"
-    assert "on the way" in track_res.json()["display_message"]
+    data = track_res.json()
+    
+    assert data["status"] == "OUT_FOR_DELIVERY"
+    assert "on the way" in data["display_message"].lower()
