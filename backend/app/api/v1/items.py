@@ -14,15 +14,41 @@ from app.services.items_service import (
 # This router helps us organize our menu code
 router = APIRouter(tags=["Menu Items"])
 
-@router.get("/search", response_model=List[MenuItemResponse])
-def search_items(q: str):
+@router.get("/browse")
+def browse_restaurants(
+    q: str = None, 
+    category: str = None, 
+    page: int = 1, 
+    size: int = 10
+):
     """
-    Search for food by name! 
-    FastAPI checks this first before looking for IDs.
+    Feat3-FR1: Search by keyword (q)
+    Feat3-US1: Filter by category
+    Feat3-FR2: Pagination (page/size)
     """
     all_items = list_items()
-    results = [item for item in all_items if q.lower() in item.title.lower()]
-    return results
+    
+    # 1. Search logic
+    if q:
+        all_items = [item for item in all_items if q.lower() in item.title.lower()]
+    
+    # 2. Category logic (if your item model has category)
+    if category:
+        all_items = [item for item in all_items if item.category == category]
+        
+    # 3. Simple Pagination Math
+    total = len(all_items)
+    start = (page - 1) * size
+    end = start + size
+    
+    # Return a dictionary that matches our Paginated Schema
+    return {
+        "items": all_items[start:end],
+        "total": total,
+        "page": page,
+        "size": size,
+        "pages": (total + size - 1) // size
+    }
 
 # Get all items
 @router.get("", response_model=List[MenuItemResponse])
