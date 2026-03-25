@@ -1,13 +1,12 @@
 import jwt
-import os
 from datetime import datetime, timedelta, timezone
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
 from app.repositories.user_repo import get_user_by_username, create_user
 from app.core.password_hasher import verify_password
+from app.config import SECRET_KEY
 
-SECRET_KEY = os.getenv("SECRET_KEY", "bytebites-dev-secret")
-TOKEN_EXPIRE_HOURS = 1  # extracted as constant for easy configuration
+TOKEN_EXPIRE_HOURS = 1
 
 def register(db: Session, username: str, password: str):
     """Register a new user, raises 400 if username already exists."""
