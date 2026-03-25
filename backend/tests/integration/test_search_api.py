@@ -29,7 +29,7 @@ async def test_search_restaurants_by_name(client: AsyncClient, mock_user_session
     try to search for 'Restaurant' and see if we get results.
     """
     # Send a GET request with a query parameter 'q'
-    response = await client.get("/api/v1/menu/browse?q=Restaurant")
+    response = await client.get("/menu/browse?q=Restaurant")
     
     # Expect a 200 OK status
     assert response.status_code == 200
@@ -46,7 +46,7 @@ async def test_filter_restaurants_by_category(client: AsyncClient, mock_user_ses
     We check if filtering for 'Italian' works.
     """
     # Request only Italian food
-    response = await client.get("/api/v1/menu/browse?category=Italian")
+    response = await client.get("/menu/browse?category=Italian")
     
     assert response.status_code == 200
     data = response.json()
@@ -62,7 +62,7 @@ async def test_pagination_metadata(client: AsyncClient, mock_user_session):
     We check if 'total', 'page', and 'size' are in the response.
     """
     # Ask for page 1 with only 2 items
-    response = await client.get("/api/v1/menu/browse?page=1&size=2")
+    response = await client.get("/menu/browse?page=1&size=2")
     
     assert response.status_code == 200
     data = response.json()
