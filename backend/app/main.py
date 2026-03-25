@@ -1,16 +1,27 @@
 from fastapi import FastAPI
 from app.database import engine, Base
-from app.api.v1.auth import router as auth_router
-from app.routers.items import router as items_router
+from app.api.v1 import auth, items 
+from app.models import menu, restaurant, domain
 
-# Create database tables when the app starts
+# create all our tables (users, menu, etc.)
 Base.metadata.create_all(bind=engine)
 
-app = FastAPI(title="ByteBites API")
+app = FastAPI(title="ByteBites Food Delivery API")
 
-app.include_router(auth_router)
-app.include_router(items_router)
+# --- Registering our features (Routers) ---
 
-@app.get("/health")
-def health():
-    return {"status": "ok"}
+# This handles Login and Register (/auth/login)
+app.include_router(auth.router, prefix="/auth", tags=["Authentication"])
+
+# This handles Menu items (/menu)
+app.include_router(items.router, prefix="/menu", tags=["Menu & Restaurants"])
+
+# This is a "Hello" page when you go to the root URL
+@app.get("/")
+def read_root():
+    """Welcome message for our M3 Demo!"""
+    return {
+        "message": "Welcome to ByteBites API",
+        "version": "v1.0",
+        "status": "Everything is working for our M3 Demo!"
+    }

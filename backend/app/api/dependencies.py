@@ -8,6 +8,7 @@ from app.config import SECRET_KEY
 
 bearer = HTTPBearer()
 
+# gets the user from the Token
 def get_current_user(
     credentials: HTTPAuthorizationCredentials = Depends(bearer),
     db: Session = Depends(get_db)
@@ -25,3 +26,8 @@ def get_current_user(
         raise HTTPException(status_code=401, detail="User not found")
 
     return {"id": user.id, "username": user.username, "role": user.role}
+
+def require_role(current_user = Depends(get_current_user)):
+    if not current_user:
+        raise HTTPException(status_code=401, detail="Not logged in")
+    return current_user
