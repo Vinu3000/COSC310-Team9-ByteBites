@@ -49,7 +49,7 @@ async def test_search_works_for_everyone(client: AsyncClient):
     Test 3: Does search work without any login?
     It should be 200 (OK).
     """
-    response = await client.get("/menu/search?q=Pasta")
+    response = await client.get("/menu/browse?q=pizza")
     assert response.status_code == 200
     
     # Should be 200 OK
