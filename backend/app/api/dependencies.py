@@ -1,12 +1,11 @@
 import jwt
-import os
 from fastapi import Depends, HTTPException
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlalchemy.orm import Session
 from app.database import get_db
 from app.repositories.user_repo import get_user_by_id
+from app.config import SECRET_KEY
 
-SECRET_KEY = os.getenv("SECRET_KEY", "bytebites-dev-secret")
 bearer = HTTPBearer()
 
 def get_current_user(
