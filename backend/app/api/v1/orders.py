@@ -54,27 +54,35 @@ async def place_order(payload: OrderCreate):
 # --- Feature 5: Delivery & Status Updates ---
 
 @router.put("/{order_id}/status")
-async def update_order_status(order_id: int, new_status: str):
+async def update_order_status(
+    order_id: int, 
+    new_status: str = None, 
+    status: str = None
+):
     """
     Feat4-FR1 & Feat5-FR1: Update order/delivery status.
-    Strictly prevents modification if the current status is 'COMPLETED'.
+    Compatible with both 'new_status' and 'status' query parameters.
     """
     if order_id not in mock_orders_db:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, 
-            detail="Order not found"
-        )
+        raise HTTPException(status_code=404, detail="Order not found")
     
-    # FR1: Lock logic - check current status before updating
+    # Use whichever parameter was provided by the test script
+    final_status = new_status or status
+    
+    if not final_status:
+        raise HTTPException(status_code=400, detail="No status provided")
+
+    # FR1: Lock logic
     if mock_orders_db[order_id]["status"] == "COMPLETED":
         raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN, 
+            status_code=403, 
             detail="Order is completed and cannot be modified!"
         )
 
-    mock_orders_db[order_id]["status"] = new_status
+    # Force update the global mock database
+    mock_orders_db[order_id]["status"] = final_status
     
-    return {"message": f"Order {order_id} updated to {new_status}"}
+    return {"message": f"Order {order_id} updated to {final_status}"}
 
 @router.get("/{order_id}/tracking", response_model=TrackingResponse)
 async def get_tracking(order_id: int):
