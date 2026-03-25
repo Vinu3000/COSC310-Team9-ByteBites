@@ -7,7 +7,6 @@ from app.api.dependencies import get_current_user
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
 
-# Request body shapes
 class RegisterRequest(BaseModel):
     username: str
     password: str
@@ -18,13 +17,15 @@ class LoginRequest(BaseModel):
 
 @router.post("/register", status_code=201)
 def register_user(body: RegisterRequest, db: Session = Depends(get_db)):
+    """Register a new user account with a unique username and password."""
     return register(db, body.username, body.password)
 
 @router.post("/login")
 def login_user(body: LoginRequest, db: Session = Depends(get_db)):
+    """Authenticate a user and return a JWT access token."""
     return login(db, body.username, body.password)
 
 @router.get("/me")
 def get_me(current_user=Depends(get_current_user)):
-    # Returns the currently logged-in user's info
+    """Return the currently authenticated user's profile."""
     return current_user
