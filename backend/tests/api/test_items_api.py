@@ -16,7 +16,7 @@ def test_invalid_login_returns_401():
 
 # Unit test: accessing /me without token should fail
 def test_no_token_returns_401():
-    response = client.get("/api/v1/auth/auth/me")
+    response = client.get("/api/v1/auth/me")
     assert response.status_code == 401
 # Integration test: full register → login → access flow
 def test_register_login_then_access_me():
