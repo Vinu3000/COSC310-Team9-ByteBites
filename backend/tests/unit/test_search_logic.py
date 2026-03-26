@@ -42,3 +42,62 @@ def test_filter_logic_unit():
     
     assert len(results) == 1
     assert results[0].title == "Burger Joint"
+
+# --- Edge Case Tests ---
+
+def test_pagination_out_of_bounds():
+    """
+    Check if it returns an empty list when the page number is too high.
+    """
+    fake_data = list(range(5))  # Only 5 items
+    size = 10
+    
+    # Requesting page 2 should return no items, but NOT crash
+    sliced, total_pages = paginate_data(fake_data, page=2, size=size)
+    
+    assert len(sliced) == 0
+    assert total_pages == 1
+
+def test_filter_no_match():
+    """
+    Check if it returns an empty list when the search word doesn't exist.
+    """
+    class MockItem:
+        def __init__(self, title, category):
+            self.title = title
+            self.category = category
+
+    items = [MockItem("Pizza", "Italian")]
+    
+    # Searching for something that isn't there
+    results = filter_restaurants(items, q="Sushi")
+    
+    assert len(results) == 0
+
+def test_filter_case_insensitivity_and_partial_match():
+    """
+    Check if 'piz' can find 'Pizza Place'. Users often type partial words.
+    """
+    class MockItem:
+        def __init__(self, title, category):
+            self.title = title
+            self.category = category
+
+    items = [MockItem("Pizza Place", "Italian")]
+    
+    # Partial match and mixed case
+    results = filter_restaurants(items, q="pIz")
+    
+    assert len(results) == 1
+    assert "Pizza" in results[0].title
+
+def test_empty_data_handling():
+    """
+    Check if the code handles an empty database without crashing.
+    """
+    empty_list = []
+    
+    sliced, total_pages = paginate_data(empty_list, page=1, size=10)
+    
+    assert len(sliced) == 0
+    assert total_pages == 0

@@ -5,6 +5,7 @@ class OrderCreate(BaseModel):
     """
     Data needed to place a new order.
     Used in POST /orders/place
+    
     """
     restaurant_id: int
     items: List[str]
