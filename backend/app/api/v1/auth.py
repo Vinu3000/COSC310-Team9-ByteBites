@@ -1,19 +1,11 @@
 from fastapi import APIRouter, Depends
-from pydantic import BaseModel
 from sqlalchemy.orm import Session
 from app.database import get_db
 from app.services.auth_service import register, login
 from app.api.dependencies import get_current_user
+from app.schemas.auth import RegisterRequest, LoginRequest
 
-router = APIRouter(prefix="/auth", tags=["Authentication"])
-
-class RegisterRequest(BaseModel):
-    username: str
-    password: str
-
-class LoginRequest(BaseModel):
-    username: str
-    password: str
+router = APIRouter(tags=["Authentication"])
 
 @router.post("/register", status_code=201)
 def register_user(body: RegisterRequest, db: Session = Depends(get_db)):
