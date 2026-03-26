@@ -1,6 +1,6 @@
 from typing import List, Optional
 from uuid import UUID
-from app.models.schemas import RestaurantResponse
+from app.schemas.restaurant import RestaurantResponse
 
 class RestaurantRepository:
     def __init__(self):
