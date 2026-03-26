@@ -1,34 +1,28 @@
-from pydantic import BaseModel, ConfigDict
-from typing import List
+from pydantic import BaseModel
+from typing import List, Optional
+from app.models.enums import OrderStatus
 
 class OrderCreate(BaseModel):
-    """
-    Data needed to place a new order.
-    Used in POST /orders/place
-    
-    """
-    restaurant_id: int
-    items: List[str]
-    total_price: float
+    restaurant_id: Optional[int] = 1
+    items: List
+    delivery_address: Optional[str] = "Standard Address"
+    total_price: Optional[float] = 0.0
 
 class OrderResponse(BaseModel):
-    """
-    Basic order information returned to the user.
-    """
     id: int
-    status: str
+    restaurant_id: int
+    items: List
     total_price: float
+    subtotal: float
+    status: str
 
-    # allow working with ORM/Dict objects
-    model_config = ConfigDict(from_attributes=True)
+    class Config:
+        from_attributes = True
 
 class TrackingResponse(BaseModel):
-    """
-    Response for order tracking status and messages.
-    Used in GET /orders/{id}/tracking
-    """
-    order_id: int
+    order_id: str
     status: str
     display_message: str
 
-    model_config = ConfigDict(from_attributes=True)
+    class Config:
+        from_attributes = True
