@@ -26,7 +26,6 @@ def get_current_user(
         raise HTTPException(status_code=401, detail="User not found")
 
     return {"id": user.id, "username": user.username, "role": user.role}
-
 def require_role(current_user = Depends(get_current_user)):
     if not current_user:
         raise HTTPException(status_code=401, detail="Not logged in")
