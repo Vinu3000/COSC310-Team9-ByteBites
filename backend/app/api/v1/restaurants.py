@@ -1,17 +1,44 @@
 from fastapi import APIRouter, Query
-from app.models.schemas import PaginatedRestaurants
+from typing import List
+import uuid
+from app.schemas.restaurant import PaginatedRestaurants
+from app.services.items_service import list_items 
 
-router = APIRouter(prefix="/restaurants", tags=["Restaurants"])
+router = APIRouter(tags=["Restaurants"])
 
 @router.get("/", response_model=PaginatedRestaurants)
 async def list_restaurants(
-    page: int = Query(1, ge=1),   # making sure page >= 1
-    size: int = Query(10, le=100) # limit amount of each page
+    q: str = Query(None),
+    category: str = Query(None),
+    page: int = Query(1, ge=1),
+    size: int = Query(10, le=100)
 ):
-    #restaurant_service
-    return {"items": [], "total": 0, "page": page, "size": size}
-
-@router.get("/search")
-async def search_restaurants(q: str = Query(..., min_length=1)):
-    # keyword
-    return []
+    all_raw_data = list_items() 
+    if q:
+        all_raw_data = [r for r in all_raw_data if q.lower() in r.title.lower()]
+    if category:
+        all_raw_data = [r for r in all_raw_data if r.category == category]
+        
+    total = len(all_raw_data)
+    start = (page - 1) * size
+    end = start + size
+    sliced_data = all_raw_data[start:end]
+    
+    formatted_restaurants = []
+    for item in sliced_data:
+        fake_uuid = uuid.UUID(int=int(item.id)) 
+        formatted_restaurants.append({
+            "id": fake_uuid,
+            "name": item.title,
+            "location": "UBCO Campus",
+            "category": item.category
+        })
+    
+    total_pages = (total + size - 1) // size
+    return {
+        "items": formatted_restaurants,
+        "total": total,
+        "page": page,
+        "size": size,
+        "pages": total_pages
+    }

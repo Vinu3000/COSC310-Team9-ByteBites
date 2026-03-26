@@ -3,7 +3,7 @@ from app.main import app
 from httpx import AsyncClient
 from app.api.dependencies import require_role
 
-# test async functions
+# Tell pytest to handle async functions
 pytestmark = pytest.mark.asyncio
 
 # --- Simple Mock Functions ---
@@ -11,46 +11,46 @@ pytestmark = pytest.mark.asyncio
 @pytest.fixture
 def mock_admin():
     async def override_admin():
+        # Fake an Admin user
         return {"id": 1, "role": "ADMIN"}
-    # Direct override
     app.dependency_overrides[require_role] = override_admin
+    yield # Let the test run
+    app.dependency_overrides = {} # Clean up after test
 
 @pytest.fixture
 def mock_manager():
     async def override_manager():
+        # Fake a Manager for Restaurant 1
         return {"id": 2, "role": "MANAGER", "managed_restaurant_id": 1}
     app.dependency_overrides[require_role] = override_manager
+    yield # Let the test run
+    app.dependency_overrides = {} # Clean up after test
 
 # --- Integration Tests ---
 
 async def test_admin_can_delete_item(client: AsyncClient, mock_admin):
-    """
-    Test 1: Can the Admin delete an item? 
-    It should NOT be 401 (Unauthorized).
-    """
-    # Try to delete menu item number 1
-    response = await client.delete("/menu/1")
+
+    response = await client.delete("/api/v1/menu/1")
     
-    # Check if it worked (204) or if the item just wasn't there (404)
-    assert response.status_code == 204 or response.status_code == 404
+    # 204 means deleted, 404 means it wasn't there
+    assert response.status_code in [204, 404]
 
 async def test_manager_cannot_delete_other_item(client: AsyncClient, mock_manager):
     """
-    Test 2: Can a Manager delete an item from ANOTHER restaurant?
-    It should be 403 (Forbidden).
+    Test 2: Manager of Rest 1 tries to delete item from Rest 2.
+    Should be 403 Forbidden.
     """
-    # Manager of Rest 1 tries to delete item 500 (which is in Rest 2)
-    response = await client.delete("/menu/500") 
+    response = await client.delete("/api/v1/menu/500") 
     
+    # We expect 403 because item 500 is in another restaurant
     assert response.status_code == 403
 
 async def test_search_works_for_everyone(client: AsyncClient):
     """
-    Test 3: Does search work without any login?
-    It should be 200 (OK).
+    Test 3: Does search work without login?
+    Path moved from /menu/browse to /restaurants/
     """
-    response = await client.get("/menu/browse?q=pizza")
-    assert response.status_code == 200
+    response = await client.get("/api/v1/restaurants/?q=pizza")
     
-    # Should be 200 OK
+    # Everyone can search, so it should be 200 OK
     assert response.status_code == 200
