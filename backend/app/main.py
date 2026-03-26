@@ -1,29 +1,35 @@
 from fastapi import FastAPI
-from app.database import engine, Base
-from app.api.v1 import auth, items, orders
-from app.models import menu, restaurant, domain
 
-# create all our tables (users, menu, etc.)
-Base.metadata.create_all(bind=engine)
+from app.repositories.order_repository import OrderRepository
+from app.repositories.notification_repository import NotificationRepository
 
-app = FastAPI(title="ByteBites Food Delivery API")
+from app.services.pricing_service import PricingService
+from app.services.payment_service import PaymentService
+from app.services.notification_service import NotificationService
+from app.services.order_service import OrderService
 
-# --- Registering our features (Routers) ---
+from app.routers import orders_router, payments_router, notifications_router
 
-# This handles Login and Register (/auth/login)
-app.include_router(auth.router, prefix="/auth", tags=["Authentication"])
+app = FastAPI()
 
-# This handles Menu items (/menu)
-app.include_router(items.router, prefix="/menu", tags=["Menu & Restaurants"])
-# This handles Orders
-app.include_router(orders.router, prefix="/orders", tags=["Orders"])
+order_repository = OrderRepository()
+notification_repository = NotificationRepository()
 
-# This is a "Hello" page when you go to the root URL
-@app.get("/")
-def read_root():
-    """Welcome message for our M3 Demo!"""
-    return {
-        "message": "Welcome to ByteBites API",
-        "version": "v1.0",
-        "status": "Everything is working for our M3 Demo!"
-    }
+pricing_service = PricingService()
+payment_service = PaymentService()
+notification_service = NotificationService(notification_repository)
+
+order_service = OrderService(
+    order_repository,
+    pricing_service,
+    payment_service,
+    notification_service
+)
+
+orders_router.set_order_service(order_service)
+payments_router.set_order_service(order_service)
+notifications_router.set_notification_service(notification_service)
+
+app.include_router(orders_router.router)
+app.include_router(payments_router.router)
+app.include_router(notifications_router.router)
