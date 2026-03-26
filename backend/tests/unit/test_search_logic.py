@@ -1,27 +1,44 @@
 import pytest
 from app.data.ingest_data import CATEGORY_MAP
+from app.services.restaurant_service import filter_restaurants, paginate_data
 
-# This unit test checks our internal logic without needing a database
-# It ensures our category mapping is correct
 
 def test_category_mapping_logic():
-    """
-    Check if our category dictionary returns the correct food type.
-    """
-    # Test a known item
+    """ Check if our category dictionary returns the correct food type. """
     assert CATEGORY_MAP.get("Sushi") == "Japanese"
     assert CATEGORY_MAP.get("Pizza") == "Italian"
-    
-    # Test an unknown item (should fall back to None or a default)
-    assert CATEGORY_MAP.get("Unknown Food", "Other") == "Other"
+
+# --- Refactored Tests ---
 
 def test_pagination_math_logic():
     """
-    Check if our pagination math works (Total items / Page size).
+    no longer write the math inside the test. 
+    call the actual function to see if it works
     """
-    total_items = 25
+    # Create a list with 25 items
+    fake_data = list(range(25))
     size = 10
-    # The math used in our API: (total + size - 1) // size
-    pages = (total_items + size - 1) // size
     
-    assert pages == 3 # 25 items with 10 per page should be 3 pages
+    # Call the real function from our service
+    _, pages = paginate_data(fake_data, page=1, size=size)
+    
+    # It should still be 3
+    assert pages == 3
+
+def test_filter_logic_unit():
+    """
+    Check if our search filter actually finds the right words.
+    """
+    # A simple class to act like a data object
+    class MockItem:
+        def __init__(self, title, category):
+            self.title = title
+            self.category = category
+
+    items = [MockItem("Burger Joint", "Fast Food"), MockItem("Pizza Place", "Italian")]
+    
+    # Test if it finds 'burger'
+    results = filter_restaurants(items, q="BURGER")
+    
+    assert len(results) == 1
+    assert results[0].title == "Burger Joint"
