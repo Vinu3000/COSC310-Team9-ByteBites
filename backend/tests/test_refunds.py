@@ -71,3 +71,11 @@ def test_reject_refund_requires_requested_status():
     response = client.put("/refunds/order-2/reject")
     assert response.status_code == 400
     assert "No pending refund request" in response.json()["detail"]
+
+
+def test_double_refund_request_blocked():
+    client.post("/refunds/order-1/request", json={"reason": "First"})
+    response = client.post("/refunds/order-1/request", json={"reason": "Second"})
+
+    assert response.status_code == 400
+    assert "already requested" in response.json()["detail"]
