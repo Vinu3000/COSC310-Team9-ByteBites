@@ -55,3 +55,9 @@ async def update_status(order_id: str, new_status: str, service: OrderService = 
         if "cannot be modified" in str(e):
             raise HTTPException(status_code=403, detail=str(e))
         raise HTTPException(status_code=400, detail=str(e))
+
+@router.get("/")
+async def get_all_orders():
+    # This returns all orders from the shared mock database
+    # Converting the dictionary values to a list for the frontend
+    return list(mock_orders_db.values())
