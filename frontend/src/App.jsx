@@ -3,46 +3,50 @@ import './styles/App.css'
 import Navbar from './components/Navbar'
 import OrdersPage from './pages/OrdersPage'
 import AdminRefundsPage from './pages/AdminRefundsPage'
-import AdminPromosPage from './pages/AdminPromosPage';
+import AdminPromosPage from './pages/AdminPromosPage'
+import DiscoveryPage from './pages/DiscoveryPage'
+import LoginPage from './pages/LoginPage' // Import the new LoginPage
 
 function App() {
-  const [currentPage, setCurrentPage] = useState('orders')
+  const [currentPage, setCurrentPage] = useState('discovery') 
   const [orders, setOrders] = useState([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
   
-  const [userRole, setUserRole] = useState('admin') 
+  // Start with null to force login
+  const [userRole, setUserRole] = useState(null) 
 
   const fetchOrders = async () => {
     setLoading(true)
     setError(null)
     try {
-      const token = localStorage.getItem('token')
-      const response = await fetch('http://localhost:8000/api/v1/orders', {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-      })
+      const response = await fetch('http://localhost:8000/api/v1/orders')
       if (!response.ok) throw new Error('Failed to fetch orders')
       const data = await response.json()
       setOrders(data)
     } catch (err) {
       setError(err.message)
-      console.error('Fetch error:', err)
     } finally {
       setLoading(false)
     }
   }
 
   useEffect(() => {
-    fetchOrders()
-  }, [])
+    if (userRole) {
+      fetchOrders()
+    }
+  }, [userRole])
 
-  /**
-   * Updates the order price in the local state after a promo is successfully applied.
-   * This ensures the user sees the new price immediately without a full page reload.
-   */
+  const handleLogin = (role) => {
+    setUserRole(role)
+    setCurrentPage('discovery')
+  }
+
+  const handleLogout = () => {
+    setUserRole(null)
+    setCurrentPage('discovery')
+  }
+
   const handleUpdateOrderPrice = (orderId, newTotal, discountAmount) => {
     setOrders(prevOrders => 
       prevOrders.map(order => 
@@ -61,25 +65,41 @@ function App() {
     fetchOrders()
   }
 
+  // ---Authorization Guard ---
+  // If no user is logged in, show ONLY the Login Page
+  if (!userRole) {
+    return <LoginPage onLogin={handleLogin} />
+  }
+
   return (
     <div className="app">
-      <Navbar currentPage={currentPage} onNavigate={handleNavigate} userRole={userRole} />
+      <Navbar 
+        currentPage={currentPage} 
+        onNavigate={handleNavigate} 
+        userRole={userRole} 
+        onLogout={handleLogout} 
+      />
       
       <main className="app__main">
         {loading && <div className="loading">Loading...</div>}
         {error && <div className="error">Error: {error}</div>}
         
-        {/* User View: Orders Page with Claire's Promo functionality */}
+        {/* Discovery Page */}
+        {currentPage === 'discovery' && (
+          <DiscoveryPage />
+        )}
+        
+        {/* User View: Orders Page */}
         {currentPage === 'orders' && (
           <OrdersPage 
             orders={orders} 
             onRefundSuccess={handleRefundSuccess}
-            onUpdateOrder={handleUpdateOrderPrice} // Passing the update handler
+            onUpdateOrder={handleUpdateOrderPrice} 
             loading={loading}
           />
         )}
         
-        {/* Admin View: Refunds Page */}
+        {/* Admin View: Refunds Page (Feat 1 Authorization) */}
         {currentPage === 'admin-refunds' && userRole === 'admin' && (
           <AdminRefundsPage 
             orders={orders}
@@ -87,16 +107,16 @@ function App() {
           />
         )}
 
-        {/* --- Admin Promo Management Page --- */}
+        {/* Admin View: Promos Page (Feat 1 Authorization) */}
         {currentPage === 'admin-promos' && userRole === 'admin' && (
           <AdminPromosPage />
         )}
 
-        {/* Authorization Guard */}
+        {/* Access Denied Guard */}
         {(currentPage === 'admin-refunds' || currentPage === 'admin-promos') && userRole !== 'admin' && (
           <div className="unauthorized">
             <h2>Access Denied</h2>
-            <p>You do not have permission to access this page.</p>
+            <p>Manager permissions required to view this page.</p>
           </div>
         )}
       </main>
