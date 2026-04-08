@@ -3,15 +3,16 @@ import './styles/App.css'
 import Navbar from './components/Navbar'
 import OrdersPage from './pages/OrdersPage'
 import AdminRefundsPage from './pages/AdminRefundsPage'
+import AdminPromosPage from './pages/AdminPromosPage';
 
 function App() {
   const [currentPage, setCurrentPage] = useState('orders')
   const [orders, setOrders] = useState([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
-  const [userRole, setUserRole] = useState('user') // 'user' or 'admin'
+  
+  const [userRole, setUserRole] = useState('admin') 
 
-  // Fetch orders from backend
   const fetchOrders = async () => {
     setLoading(true)
     setError(null)
@@ -38,6 +39,20 @@ function App() {
     fetchOrders()
   }, [])
 
+  /**
+   * Updates the order price in the local state after a promo is successfully applied.
+   * This ensures the user sees the new price immediately without a full page reload.
+   */
+  const handleUpdateOrderPrice = (orderId, newTotal, discountAmount) => {
+    setOrders(prevOrders => 
+      prevOrders.map(order => 
+        order.id === orderId 
+          ? { ...order, total_price: newTotal, discount_applied: discountAmount } 
+          : order
+      )
+    )
+  }
+
   const handleNavigate = (page) => {
     setCurrentPage(page)
   }
@@ -54,14 +69,17 @@ function App() {
         {loading && <div className="loading">Loading...</div>}
         {error && <div className="error">Error: {error}</div>}
         
+        {/* User View: Orders Page with Claire's Promo functionality */}
         {currentPage === 'orders' && (
           <OrdersPage 
             orders={orders} 
             onRefundSuccess={handleRefundSuccess}
+            onUpdateOrder={handleUpdateOrderPrice} // Passing the update handler
             loading={loading}
           />
         )}
         
+        {/* Admin View: Refunds Page */}
         {currentPage === 'admin-refunds' && userRole === 'admin' && (
           <AdminRefundsPage 
             orders={orders}
@@ -69,7 +87,13 @@ function App() {
           />
         )}
 
-        {currentPage === 'admin-refunds' && userRole !== 'admin' && (
+        {/* --- Admin Promo Management Page --- */}
+        {currentPage === 'admin-promos' && userRole === 'admin' && (
+          <AdminPromosPage />
+        )}
+
+        {/* Authorization Guard */}
+        {(currentPage === 'admin-refunds' || currentPage === 'admin-promos') && userRole !== 'admin' && (
           <div className="unauthorized">
             <h2>Access Denied</h2>
             <p>You do not have permission to access this page.</p>

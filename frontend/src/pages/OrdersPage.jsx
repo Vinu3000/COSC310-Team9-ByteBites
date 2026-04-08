@@ -2,32 +2,54 @@ import { useState } from 'react'
 import RefundButton from '../components/RefundButton'
 import '../styles/OrdersPage.css'
 
-function OrdersPage({ orders = [], onRefundSuccess, loading }) {
+function OrdersPage({ orders = [], onRefundSuccess, loading, onUpdateOrder }) {
   const [expandedOrderId, setExpandedOrderId] = useState(null)
+  const [promoCode, setPromoCode] = useState("")
+  const [promoError, setPromoError] = useState("")
 
   const toggleOrderDetails = (orderId) => {
     setExpandedOrderId(expandedOrderId === orderId ? null : orderId)
+    setPromoError("")
+    setPromoCode("")
   }
 
-  if (loading) {
-    return <div className="orders-page__loading">Loading orders...</div>
-  }
+  const handleApplyPromo = async (orderId, currentSubtotal) => {
+    setPromoError("") 
+    
+    try {
+      const response = await fetch("http://localhost:8000/api/v1/promos/apply", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ 
+          subtotal: currentSubtotal, 
+          code: promoCode 
+        })
+      });
 
-  if (!orders || orders.length === 0) {
-    return (
-      <div className="orders-page">
-        <h1>My Orders</h1>
-        <div className="orders-page__empty">
-          <p>No orders found. Start ordering from our menu!</p>
-        </div>
-      </div>
-    )
-  }
+      const data = await response.json();
+
+      if (response.ok) {
+        alert(data.message);
+        if (onUpdateOrder) {
+          // Success: Use the data returned from backend
+          onUpdateOrder(orderId, data.new_total, data.discount_amount);
+        }
+      } else {
+        // Display why it failed (e.g. "Disabled by admin")
+        setPromoError(data.detail || "Failed to apply promo code.");
+      }
+    } catch (err) {
+      setPromoError("Server connection failed. Please try again later.");
+    }
+  };
+
+  // ... (The rest of your rendering code remains the same)
+  if (loading) return <div className="orders-page__loading">Loading orders...</div>
+  if (!orders || orders.length === 0) return <div>No orders found.</div>
 
   return (
     <div className="orders-page">
       <h1>My Orders</h1>
-      
       <div className="orders-page__list">
         {orders.map(order => (
           <div key={order.id} className="order-card">
@@ -35,79 +57,32 @@ function OrdersPage({ orders = [], onRefundSuccess, loading }) {
               <div className="order-card__summary">
                 <h3>Order #{order.id}</h3>
                 <div className="order-card__statuses">
-                  <span className={`status-badge status-badge--order`}>
-                    {order.status || 'Unknown'}
-                  </span>
-                  <span className={`status-badge status-badge--payment`}>
-                    {order.payment_status || 'Unknown'}
-                  </span>
-                  {order.refund_status && order.refund_status !== 'None' && (
-                    <span className={`status-badge status-badge--refund status-badge--refund-${order.refund_status.toLowerCase()}`}>
-                      Refund: {order.refund_status}
-                    </span>
-                  )}
+                  <span className="status-badge">{order.status}</span>
                 </div>
               </div>
               <div className="order-card__price">
-                <strong>${order.total_price?.toFixed(2) || '0.00'}</strong>
+                <strong>${order.total_price?.toFixed(2)}</strong>
               </div>
-              <button className="order-card__toggle">
-                {expandedOrderId === order.id ? '▼' : '▶'}
-              </button>
             </div>
 
             {expandedOrderId === order.id && (
               <div className="order-card__details">
-                <div className="order-details">
-                  <div className="order-details__section">
-                    <h4>Order Details</h4>
-                    <p><strong>Order ID:</strong> {order.id}</p>
-                    <p><strong>Status:</strong> {order.status}</p>
-                    <p><strong>Payment Status:</strong> {order.payment_status}</p>
-                    {order.refund_status && (
-                      <p><strong>Refund Status:</strong> {order.refund_status}</p>
-                    )}
-                    {order.refund_reason && (
-                      <p><strong>Refund Reason:</strong> {order.refund_reason}</p>
-                    )}
+                <div className="promo-section">
+                  <h4>Promotions</h4>
+                  <div className="promo-input-group">
+                    <input 
+                      type="text" 
+                      value={promoCode}
+                      onChange={(e) => setPromoCode(e.target.value)}
+                      className="promo-input"
+                    />
+                    <button onClick={() => handleApplyPromo(order.id, order.total_price)}>Apply</button>
                   </div>
-
-                  <div className="order-details__section">
-                    <h4>Items</h4>
-                    {order.items && order.items.length > 0 ? (
-                      <ul className="order-items">
-                        {order.items.map((item, idx) => (
-                          <li key={idx} className="order-item">
-                            <span>{item.name || 'Item'}</span>
-                            <span className="order-item__price">${item.price?.toFixed(2) || '0.00'}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    ) : (
-                      <p>No items in this order</p>
-                    )}
-                  </div>
-
-                  <div className="order-details__section">
-                    <h4>Total</h4>
-                    <p className="order-total">${order.total_price?.toFixed(2) || '0.00'}</p>
-                  </div>
-
-                  {/* Refund Button - Only show if order is eligible */}
-                  {(order.status === 'Pending' || order.status === 'Preparing') && 
-                   order.payment_status === 'Success' &&
-                   (!order.refund_status || order.refund_status === 'None') && (
-                    <div className="order-details__section">
-                      <RefundButton
-                        orderId={order.id}
-                        orderStatus={order.status}
-                        paymentStatus={order.payment_status}
-                        refundStatus={order.refund_status}
-                        onRefundSuccess={onRefundSuccess}
-                      />
-                    </div>
-                  )}
+                  {promoError && <p style={{color: 'red'}}>{promoError}</p>}
                 </div>
+                {/* Total Section */}
+                <p>Total: ${order.total_price?.toFixed(2)}</p>
+                {order.discount_applied > 0 && <p>- Discount: ${order.discount_applied}</p>}
               </div>
             )}
           </div>
@@ -117,4 +92,4 @@ function OrdersPage({ orders = [], onRefundSuccess, loading }) {
   )
 }
 
-export default OrdersPage
+export default OrdersPage;
