@@ -1,0 +1,106 @@
+.admin-promos {
+    padding: 40px 20px;
+    max-width: 900px;
+    margin: 0 auto;
+    font-family: 'Inter', -apple-system, sans-serif;
+}
+
+.admin-promos h1 {
+    font-size: 2rem;
+    color: #1a202c;
+    margin-bottom: 8px;
+}
+
+.admin-promos p {
+    color: #718096;
+    margin-bottom: 32px;
+}
+
+.admin-table-container {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    overflow: hidden;
+    border: 1px solid #edf2f7;
+}
+
+.admin-table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+}
+
+.admin-table th {
+    background-color: #f8fafc;
+    padding: 16px;
+    color: #4a5568;
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    letter-spacing: 0.05em;
+    border-bottom: 2px solid #edf2f7;
+}
+
+.admin-table td {
+    padding: 20px 16px;
+    border-bottom: 1px solid #edf2f7;
+    vertical-align: middle;
+}
+
+.promo-code-badge {
+    background: #ebf8ff;
+    color: #2b6cb0;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-family: monospace;
+    font-weight: bold;
+    font-size: 1rem;
+}
+
+.status-pill {
+    padding: 4px 12px;
+    border-radius: 9999px;
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.status-pill--active {
+    background-color: #c6f6d5;
+    color: #22543d;
+}
+
+.status-pill--disabled {
+    background-color: #fed7d7;
+    color: #822727;
+}
+
+.action-button {
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: none;
+    font-size: 0.875rem;
+}
+
+.btn-deactivate {
+    background-color: #fff;
+    color: #e53e3e;
+    border: 1px solid #feb2b2;
+}
+
+.btn-deactivate:hover {
+    background-color: #fff5f5;
+    border-color: #e53e3e;
+}
+
+.btn-activate {
+    background-color: #3182ce;
+    color: white;
+}
+
+.btn-activate:hover {
+    background-color: #2b6cb0;
+    box-shadow: 0 4px 12px rgba(49, 130, 206, 0.3);
+}
