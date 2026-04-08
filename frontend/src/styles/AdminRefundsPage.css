@@ -1,0 +1,184 @@
+.admin-refunds-page {
+  width: 100%;
+}
+
+.admin-refunds-page__title {
+  margin-bottom: 2rem;
+  font-size: 2rem;
+}
+
+.admin-refunds-page__empty {
+  text-align: center;
+  padding: 3rem 1rem;
+  color: #6b7280;
+  background-color: #f3f4f6;
+  border-radius: 0.5rem;
+  margin-top: 1rem;
+}
+
+.admin-refunds-page__table-container {
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.admin-message {
+  padding: 1rem;
+  border-radius: 0.375rem;
+  margin-bottom: 1.5rem;
+  font-weight: 500;
+}
+
+.admin-message--success {
+  background-color: #d1fae5;
+  color: #065f46;
+  border: 1px solid #6ee7b7;
+}
+
+.admin-message--error {
+  background-color: #fee2e2;
+  color: #7f1d1d;
+  border: 1px solid #fca5a5;
+}
+
+/* Admin Refunds Table */
+.admin-refunds-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.admin-refunds-table thead {
+  background-color: #f9fafb;
+  border-bottom: 2px solid #e5e7eb;
+}
+
+.admin-refunds-table th {
+  padding: 1rem;
+  text-align: left;
+  font-weight: 600;
+  color: #1f2937;
+  font-size: 0.95rem;
+}
+
+.admin-refunds-table__row {
+  border-bottom: 1px solid #e5e7eb;
+  transition: background-color 0.3s ease;
+}
+
+.admin-refunds-table__row:hover {
+  background-color: #f9fafb;
+}
+
+.admin-refunds-table__cell {
+  padding: 1rem;
+  color: #4b5563;
+  font-size: 0.95rem;
+}
+
+.admin-refunds-table__cell--order-id {
+  font-weight: 600;
+  color: #1f2937;
+  font-family: 'Courier New', monospace;
+}
+
+.admin-refunds-table__cell--reason {
+  max-width: 200px;
+  word-break: break-word;
+  color: #6b7280;
+  font-size: 0.9rem;
+}
+
+.admin-refunds-table__cell--actions {
+  display: flex;
+  gap: 0.75rem;
+}
+
+/* Action Buttons */
+.action-button {
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 0.375rem;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+}
+
+.action-button--approve {
+  background-color: #10b981;
+  color: white;
+}
+
+.action-button--approve:hover:not(:disabled) {
+  background-color: #059669;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.action-button--approve:disabled {
+  background-color: #9ca3af;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.action-button--reject {
+  background-color: #ef4444;
+  color: white;
+}
+
+.action-button--reject:hover:not(:disabled) {
+  background-color: #dc2626;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.action-button--reject:disabled {
+  background-color: #9ca3af;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+/* Status Badge Styles */
+.status-badge {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.status-badge--order {
+  background-color: #dbeafe;
+  color: #0c4a6e;
+}
+
+.status-badge--payment {
+  background-color: #dcfce7;
+  color: #166534;
+}
+
+@media (max-width: 768px) {
+  .admin-refunds-page__title {
+    font-size: 1.5rem;
+  }
+
+  .admin-refunds-table {
+    font-size: 0.85rem;
+  }
+
+  .admin-refunds-table th,
+  .admin-refunds-table__cell {
+    padding: 0.75rem 0.5rem;
+  }
+
+  .admin-refunds-table__cell--reason {
+    display: none;
+  }
+
+  .action-button {
+    padding: 0.4rem 0.75rem;
+    font-size: 0.8rem;
+  }
+}
