@@ -111,10 +111,8 @@ function DiscoveryPage() {
 
     try {
       const orderData = {
-        restaurant_id: cart[0].restaurantId,
         items: cart.map(i => ({ menu_item_id: i.id, quantity: i.quantity })),
-        total_amount: cart.reduce((sum, i) => sum + i.price * i.quantity, 0),
-        status: "completed" 
+        delivery_address: "Standard Address"
       };
 
       await placeOrder(orderData);
