@@ -41,7 +41,6 @@ function OrdersPage({ orders = [], onRefundSuccess, loading, onUpdateOrder }) {
     }
   }
 
-  // Feature 7: inline payment simulation states
   const handleSimulatePayment = async (orderId) => {
     setPaymentStates(prev => ({ ...prev, [orderId]: { status: 'processing', message: '' } }))
     try {
@@ -95,7 +94,6 @@ function OrdersPage({ orders = [], onRefundSuccess, loading, onUpdateOrder }) {
                     <span className={`status-badge status--${order.status.toLowerCase().replace(/\s/g, '-')}`}>
                       {order.status === 'Preparing' ? '👨‍🍳 ' : '🚴 '}{order.status}
                     </span>
-                    {/* Feature 7: descriptive payment badge */}
                     <span className={`payment-badge payment-badge--${payInfo.cls}`}>
                       {payInfo.icon} {payInfo.label}
                     </span>
@@ -122,7 +120,6 @@ function OrdersPage({ orders = [], onRefundSuccess, loading, onUpdateOrder }) {
                     />
                   </div>
 
-                  {/* Promo Section */}
                   <div className="details-section promo-section">
                     <h4>Promo Code</h4>
                     <div className="promo-input-group">
@@ -138,7 +135,6 @@ function OrdersPage({ orders = [], onRefundSuccess, loading, onUpdateOrder }) {
                     {promoError && <p className="error-text">{promoError}</p>}
                   </div>
 
-                  {/* Feature 7: Payment simulation */}
                   {order.payment_status === 'Pending' && (
                     <div className="details-section payment-section">
                       <h4>Payment</h4>
@@ -149,7 +145,7 @@ function OrdersPage({ orders = [], onRefundSuccess, loading, onUpdateOrder }) {
                       )}
                       {payState.status === 'processing' && (
                         <div className="payment-status payment-status--processing">
-                          <span className="payment-spinner" /> Processing payment...
+                          Processing payment...
                         </div>
                       )}
                       {payState.status === 'success' && (
@@ -168,7 +164,6 @@ function OrdersPage({ orders = [], onRefundSuccess, loading, onUpdateOrder }) {
                     </div>
                   )}
 
-                  {/* Feature 9: Refund — pass all required props */}
                   <div className="details-section">
                     <RefundButton
                       orderId={order.id}
@@ -178,6 +173,7 @@ function OrdersPage({ orders = [], onRefundSuccess, loading, onUpdateOrder }) {
                       onRefundSuccess={onRefundSuccess}
                     />
                   </div>
+
                 </div>
               )}
             </div>
