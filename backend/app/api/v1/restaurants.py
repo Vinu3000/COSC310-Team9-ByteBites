@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Query, HTTPException
-from app.schemas.restaurant import PaginatedRestaurants
+from app.schemas.restaurant import PaginatedRestaurants, RestaurantResponse
 from app.api.v1.shared_data import mock_restaurants_db 
 from app.services.restaurant_service import (
     filter_restaurants, 
@@ -16,20 +16,15 @@ async def list_restaurants(
     page: int = Query(1, ge=1),
     size: int = Query(10, le=100)
 ):
-
-    # 1. Get raw data from the shared database
     all_raw_data = mock_restaurants_db 
     
-    # 2. Apply filtering logic through the service layer
+    # Filter by both search term and category
     filtered_data = filter_restaurants(all_raw_data, q, category)
-    
-    # 3. Apply pagination logic through the service layer
     sliced_data, total_pages = paginate_data(filtered_data, page, size)
     
-    # 4. Map data to schema format (this ensures all required Pydantic fields exist)
+    # Map raw data to the schema format
     formatted_restaurants = map_to_restaurant_schema(sliced_data)
     
-    # 5. Return the payload. Ensure 'pages' matches the schema field name exactly.
     return {
         "items": formatted_restaurants,
         "total": len(filtered_data),
@@ -38,35 +33,35 @@ async def list_restaurants(
         "pages": total_pages
     }
 
-@router.get("/{restaurant_id}")
-async def get_restaurant_details(restaurant_id: int):
+@router.get("/{restaurant_id}", response_model=RestaurantResponse)
+async def get_restaurant_details(restaurant_id: str):
     """
-    Feature 2: Menu Management and Data Integrity.
-    Retrieves a single restaurant and its nested menu items.
+    Handles both integer IDs and UUID-formatted strings by extracting 
+    the trailing integer used in the mock database.
     """
-    restaurant = next((r for r in mock_restaurants_db if r["id"] == restaurant_id), None)
-    
-    if not restaurant:
-        raise HTTPException(status_code=404, detail="Restaurant not found")
-        
-    return restaurant
+    target_id = None
 
-@router.get("/menu/search")
-async def search_menu_items(q: str = Query(..., min_length=1)):
-    """
-    Feature 3: Keyword search across all restaurant menus.
-    """
-    results = []
-    for res in mock_restaurants_db:
-        # Check if 'menu' exists and is a list to avoid 500 errors
-        menu = res.get("menu", [])
-        if not isinstance(menu, list):
-            continue
-            
-        for item in menu:
-            if q.lower() in item.get("name", "").lower():
-                results.append({
-                    "restaurant_name": res["name"],
-                    "item": item
-                })
-    return results
+    # Handle UUID format (e.g., 0000-000000000001)
+    if "-" in restaurant_id:
+        try:
+            # Extract the last part after the hyphen and convert to int
+            target_id = int(restaurant_id.split("-")[-1])
+        except (ValueError, IndexError):
+            raise HTTPException(status_code=404, detail="Invalid ID format")
+    
+    # Handle plain integer string (e.g., "1")
+    elif restaurant_id.isdigit():
+        target_id = int(restaurant_id)
+    
+    else:
+        raise HTTPException(status_code=404, detail="Restaurant not found")
+
+    # Search in the mock database using the extracted integer ID
+    raw_restaurant = next((r for r in mock_restaurants_db if r["id"] == target_id), None)
+    
+    if not raw_restaurant:
+        raise HTTPException(status_code=404, detail="Restaurant not found")
+    
+    # Ensure the 'menu' and other fields are mapped correctly to the response schema
+    formatted_list = map_to_restaurant_schema([raw_restaurant])
+    return formatted_list[0]

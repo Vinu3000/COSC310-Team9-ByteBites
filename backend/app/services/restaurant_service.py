@@ -1,56 +1,84 @@
 import uuid
+from types import SimpleNamespace
 from typing import List, Dict, Any
 
 def filter_restaurants(data: List[Any], q: str = None, category: str = None) -> List[Any]:
-    """
-    This function looks through the list and keeps only the ones 
-    that match the name or the food type.
-    """
-    results = data
-    # If the user typed a search word, we check if it is in the title
-    if q:
-        results = [r for r in results if q.lower() in r.title.lower()]
+    # Convert dictionaries to objects for consistent attribute access
+    objects = [
+        SimpleNamespace(**item) if isinstance(item, dict) else item 
+        for item in data
+    ]
     
-    # If the user picked a category, we filter by that too
+    results = objects
+    
+    # 1. Category Filtering
     if category:
-        results = [r for r in results if r.category == category]
+        results = [
+            r for r in results 
+            if getattr(r, "cuisine_type", None) == category or getattr(r, "category", None) == category
+        ]
+
+    # 2. Enhanced Search Query (Restaurant Name, Title, OR Menu Items)
+    if q:
+        query_lower = q.lower()
+        search_results = []
+        for r in results:
+            # Check Restaurant attributes
+            name_match = query_lower in getattr(r, "name", "").lower()
+            title_match = query_lower in getattr(r, "title", "").lower()
+            
+            # Check Menu Item attributes
+            menu_items = getattr(r, "menu", [])
+            menu_match = False
+            if isinstance(menu_items, list):
+                for item in menu_items:
+                    # Handle if menu items are dicts or objects
+                    item_name = item.get("name", "") if isinstance(item, dict) else getattr(item, "name", "")
+                    if query_lower in item_name.lower():
+                        menu_match = True
+                        break
+            
+            if name_match or title_match or menu_match:
+                search_results.append(r)
+        results = search_results
     
     return results
 
 def paginate_data(data: List[Any], page: int, size: int) -> tuple:
-    """
-    This function cuts the big list into a small piece 
-    based on the page number and how many items we want to see.
-    """
     total = len(data)
-    # Find where the page starts and ends
     start = (page - 1) * size
     end = start + size
     sliced = data[start:end]
-    
-    # Math to figure out how many total pages we need
-    if size > 0:
-        total_pages = (total + size - 1) // size
-    else:
-        total_pages = 0
-        
+    total_pages = (total + size - 1) // size if size > 0 else 0
     return sliced, total_pages
 
 def map_to_restaurant_schema(items: List[Any]) -> List[Dict[str, Any]]:
-    """
-    This function changes the raw data into the format 
-    that the restaurant schema expects.
-    """
     formatted = []
     for item in items:
-        # We turn the simple ID number into a real UUID object
-        fake_uuid = uuid.UUID(int=int(item.id)) 
+        obj = SimpleNamespace(**item) if isinstance(item, dict) else item
         
-        # We build the dictionary for the API response
+        try:
+            val = getattr(obj, "id", 0)
+            fake_uuid = uuid.UUID(int=int(val))
+        except (AttributeError, ValueError, TypeError):
+            fake_uuid = uuid.uuid4()
+
+        raw_menu = getattr(obj, "menu", [])
+        # Ensure menu items are formatted as objects or preserved as dicts 
+        # depending on your Pydantic schema requirements
+        formatted_menu = [
+            SimpleNamespace(**m) if isinstance(m, dict) else m 
+            for m in raw_menu
+        ] if isinstance(raw_menu, list) else []
+
         formatted.append({
             "id": fake_uuid,
-            "name": item.title,
-            "location": "UBCO Campus",
-            "category": item.category
+            "name": getattr(obj, "name", getattr(obj, "title", "Unknown")),
+            "title": getattr(obj, "title", getattr(obj, "name", "Unknown")),
+            "location": getattr(obj, "location", "UBCO Campus"),
+            "cuisine_type": getattr(obj, "cuisine_type", getattr(obj, "category", "N/A")),
+            "category": getattr(obj, "category", getattr(obj, "cuisine_type", "N/A")),
+            "rating": getattr(obj, "rating", 0.0),
+            "menu": formatted_menu  
         })
     return formatted
