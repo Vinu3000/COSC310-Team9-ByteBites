@@ -43,4 +43,4 @@ def home():
     return {"message": "ByteBites API is running!"}
 
 from app.routers.refunds_router import router as refunds_router
-app.include_router(refunds_router)
+app.include_router(refunds_router, prefix="/api/v1")

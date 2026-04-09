@@ -1,21 +1,39 @@
+const API_BASE = "/api/v1";
 
 export const getRefundRequests = async () => {
-    return []; // Return empty list so the table is just empty
+    // Refunds are derived from orders data — no separate endpoint needed
+    return [];
 };
 
 export const approveRefund = async (id) => {
-    console.log("Mock approved:", id);
-    return { success: true };
+    const res = await fetch(`${API_BASE}/refunds/${id}/approve`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" }
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    return await res.json();
 };
 
 export const rejectRefund = async (id) => {
-    console.log("Mock rejected:", id);
-    return { success: true };
+    const res = await fetch(`${API_BASE}/refunds/${id}/reject`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" }
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    return await res.json();
 };
 
-export const requestRefund = async (orderId) => {
-    console.log("Mock refund requested for order:", orderId);
-    return { success: true };
+export const requestRefund = async (orderId, reason) => {
+    const res = await fetch(`${API_BASE}/refunds/${orderId}/request`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ reason: reason || null })
+    });
+    if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.detail || "Failed to request refund");
+    }
+    return await res.json();
 };
 
 export const updateRefundStatus = async (id, status) => {
