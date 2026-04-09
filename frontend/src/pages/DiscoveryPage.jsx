@@ -57,7 +57,7 @@ function DiscoveryPage() {
   const handleRestaurantClick = async (res) => {
     setLoadingMenu(true);
     try {
-      const response = await fetch(`http://localhost:8000/api/v1/restaurants/${res.id}`);
+      const response = await fetch(`/api/v1/restaurants/${res.id}`);
       const fullData = await response.json();
       setSelectedRes(fullData);
     } catch (err) {

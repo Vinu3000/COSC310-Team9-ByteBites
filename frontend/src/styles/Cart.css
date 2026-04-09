@@ -158,6 +158,30 @@
     font-weight: bold;
 }
 
+/* Feature 6: Pricing Breakdown in Cart */
+.cart-pricing {
+    border-top: 1px solid #2d3436;
+    padding: 1rem 1.25rem 0.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+}
+
+.cart-pricing__row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.875rem;
+    color: #b2bec3;
+}
+
+.cart-pricing__row--total {
+    font-size: 1rem;
+    color: #ffffff;
+    border-top: 1px solid #2d3436;
+    padding-top: 0.5rem;
+    margin-top: 0.25rem;
+}
+
 .empty-msg {
     text-align: center;
     color: #b2bec3;

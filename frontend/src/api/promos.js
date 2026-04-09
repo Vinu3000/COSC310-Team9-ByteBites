@@ -1,4 +1,4 @@
-const API_BASE = "http://localhost:8000/api/v1/promos";
+const API_BASE = "/api/v1/promos";
 
 // For the Admin Page to see all codes
 export const fetchPromos = async () => {
