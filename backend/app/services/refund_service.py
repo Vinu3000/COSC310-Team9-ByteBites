@@ -6,8 +6,25 @@ from app.api.v1.shared_data import mock_orders_db
 class RefundService:
     ALLOWED_ORDER_STATUSES = {OrderStatus.PENDING, OrderStatus.PREPARING}
 
-    def request_refund(self, order_id: str, reason: str | None = None):
+    def _get_order(self, order_id):
+        """Look up order by id, handling both int and string keys."""
         order = mock_orders_db.get(order_id)
+        if order is None:
+            try:
+                order = mock_orders_db.get(int(order_id))
+            except (ValueError, TypeError):
+                pass
+        return order
+
+    def get_all_refunds(self):
+        """Return all orders that have an active refund status."""
+        return [
+            order for order in mock_orders_db.values()
+            if order.get("refund_status") not in (None, "None")
+        ]
+
+    def request_refund(self, order_id: str, reason: str | None = None):
+        order = self._get_order(order_id)
 
         if not order:
             raise HTTPException(status_code=404, detail="Order not found")
@@ -40,7 +57,7 @@ class RefundService:
         }
 
     def approve_refund(self, order_id: str):
-        order = mock_orders_db.get(order_id)
+        order = self._get_order(order_id)
 
         if not order:
             raise HTTPException(status_code=404, detail="Order not found")
@@ -64,7 +81,7 @@ class RefundService:
         }
 
     def reject_refund(self, order_id: str):
-        order = mock_orders_db.get(order_id)
+        order = self._get_order(order_id)
 
         if not order:
             raise HTTPException(status_code=404, detail="Order not found")
