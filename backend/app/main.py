@@ -15,6 +15,7 @@ Base.metadata.create_all(bind=engine)
 
 app = FastAPI(redirect_slashes=False)
 
+# CORS
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://localhost:3000", "http://localhost:5173"],
@@ -23,7 +24,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Setup all services
+# Services
 pricing_service = PricingService()
 payment_service = PaymentService()
 order_repo = OrderRepository()
@@ -43,6 +44,10 @@ app.include_router(refunds_router, prefix="/api/v1")
 
 # Extra refund routes used by backend tests
 app.include_router(refunds_router)
+
+
+app.include_router(refunds_router, prefix="/api/v1")  # frontend
+app.include_router(refunds_router)                   # tests
 
 @app.get("/")
 def home():
