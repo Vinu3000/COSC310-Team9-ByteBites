@@ -38,7 +38,7 @@ function App() {
     setLoading(true)
     setError(null)
     try {
-      const response = await fetch('http://localhost:8000/api/v1/orders')
+      const response = await fetch('/api/v1/orders/')
       if (!response.ok) throw new Error('Failed to fetch orders')
       const data = await response.json()
       setOrders(data)

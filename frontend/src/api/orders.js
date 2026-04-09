@@ -1,8 +1,8 @@
-const API_BASE_URL = 'http://localhost:8000/api/v1';
+const API_BASE_URL = '/api/v1';
 
 export const placeOrder = async (orderData) => {
   try {
-    const response = await fetch(`${API_BASE_URL}/orders`, {
+    const response = await fetch(`${API_BASE_URL}/orders/place`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
