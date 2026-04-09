@@ -61,3 +61,14 @@ docker run -p 8000:8000 bytebites-backend
 docker run -p 5173:80 bytebites-frontend
 
 docker compose up --build
+
+
+## 📦 Docker Image Verification
+
+The following shows the built Docker images:
+
+![Docker Images](./docker-images.png)
+
+The following shows running containers:
+
+![Docker Containers](./docker-containers.png)
