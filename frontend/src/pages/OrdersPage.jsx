@@ -86,7 +86,6 @@ function OrdersPage({ orders = [], onRefundSuccess, loading, onUpdateOrder }) {
 
           return (
             <div key={order.id} className={`order-card ${expandedOrderId === order.id ? 'active' : ''}`}>
-
               <div className="order-card__header" onClick={() => toggleOrderDetails(order.id)}>
                 <div className="order-card__summary">
                   <h3>Order #{order.id}</h3>
@@ -108,7 +107,6 @@ function OrdersPage({ orders = [], onRefundSuccess, loading, onUpdateOrder }) {
                 <div className="order-card__details">
                   <hr />
 
-                  {/* Feature 6: Pricing Breakdown */}
                   <div className="details-section">
                     <PricingBreakdown
                       items={order.items}
@@ -145,7 +143,7 @@ function OrdersPage({ orders = [], onRefundSuccess, loading, onUpdateOrder }) {
                       )}
                       {payState.status === 'processing' && (
                         <div className="payment-status payment-status--processing">
-                          Processing payment...
+                          <span className="payment-spinner" /> Processing payment...
                         </div>
                       )}
                       {payState.status === 'success' && (
@@ -173,7 +171,6 @@ function OrdersPage({ orders = [], onRefundSuccess, loading, onUpdateOrder }) {
                       onRefundSuccess={onRefundSuccess}
                     />
                   </div>
-
                 </div>
               )}
             </div>

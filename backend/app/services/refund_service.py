@@ -4,7 +4,6 @@ from app.api.v1.shared_data import mock_orders_db
 
 
 class RefundService:
-    # Use enum values because mock_orders_db stores strings like "Pending"
     ALLOWED_ORDER_STATUSES = {
         OrderStatus.PENDING.value,
         OrderStatus.PREPARING.value,
