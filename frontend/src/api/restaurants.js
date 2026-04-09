@@ -8,7 +8,7 @@ export const fetchRestaurants = async (search = "", page = 1, size = 10, categor
     category: category
   });
 
-  const res = await fetch(`${API_BASE}/restaurants?${params.toString()}`);
+  const res = await fetch(`${API_BASE}/restaurants/?${params.toString()}`);
   
   if (!res.ok) {
     return { items: [], total: 0, page: 1, size: 10, pages: 0 };
