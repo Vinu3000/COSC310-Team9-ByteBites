@@ -1,6 +1,6 @@
 from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware  # Added for CORS fix
-from app.api.v1 import auth, items, orders, restaurants, notifications, payments, promo # Added promo
+from fastapi.middleware.cors import CORSMiddleware
+from app.api.v1 import auth, items, orders, restaurants, notifications, payments, promo
 from app.database import engine, Base
 from app.repositories.order_repository import OrderRepository
 from app.repositories.notification_repository import NotificationRepository
@@ -8,6 +8,7 @@ from app.services.pricing_service import PricingService
 from app.services.payment_service import PaymentService
 from app.services.notification_service import NotificationService
 from app.services.order_service import OrderService
+from app.routers.refunds_router import router as refunds_router
 
 # Create database tables
 Base.metadata.create_all(bind=engine)
@@ -38,9 +39,12 @@ app.include_router(payments.router, prefix="/api/v1/payments")
 app.include_router(notifications.router, prefix="/api/v1/notifications")
 app.include_router(promo.router, prefix="/api/v1/promos", tags=["promos"])
 
+# Frontend uses these
+app.include_router(refunds_router, prefix="/api/v1")
+
+# Existing backend tests use these
+app.include_router(refunds_router)
+
 @app.get("/")
 def home():
     return {"message": "ByteBites API is running!"}
-
-from app.routers.refunds_router import router as refunds_router
-app.include_router(refunds_router, prefix="/api/v1")
