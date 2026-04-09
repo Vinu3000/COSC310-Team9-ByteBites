@@ -1,6 +1,5 @@
 import { useState } from 'react'
 import RefundButton from '../components/RefundButton'
-import PricingBreakdown from '../components/PricingBreakdown'
 import '../styles/OrdersPage.css'
 
 const PAYMENT_STATUS_MAP = {
@@ -14,6 +13,7 @@ function OrdersPage({ orders = [], onRefundSuccess, loading, onUpdateOrder }) {
   const [expandedOrderId, setExpandedOrderId] = useState(null)
   const [promoCode, setPromoCode] = useState("")
   const [promoError, setPromoError] = useState("")
+  // Feature 7: per-order payment simulation state
   const [paymentStates, setPaymentStates] = useState({})
 
   const toggleOrderDetails = (orderId) => {
@@ -25,7 +25,7 @@ function OrdersPage({ orders = [], onRefundSuccess, loading, onUpdateOrder }) {
   const handleApplyPromo = async (orderId, currentSubtotal) => {
     setPromoError("")
     try {
-      const response = await fetch("/api/v1/promos/apply", {
+      const response = await fetch("http://localhost:8000/api/v1/promos/apply", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ subtotal: currentSubtotal, code: promoCode })
@@ -41,11 +41,11 @@ function OrdersPage({ orders = [], onRefundSuccess, loading, onUpdateOrder }) {
     }
   }
 
-  // Feature 7: inline payment simulation states
+  // Feature 7: replace alert() with inline status feedback
   const handleSimulatePayment = async (orderId) => {
     setPaymentStates(prev => ({ ...prev, [orderId]: { status: 'processing', message: '' } }))
     try {
-      const response = await fetch(`/api/v1/orders/${orderId}/pay`, {
+      const response = await fetch(`http://localhost:8000/api/v1/orders/${orderId}/pay`, {
         method: "POST",
         headers: { "Content-Type": "application/json" }
       })
@@ -75,7 +75,7 @@ function OrdersPage({ orders = [], onRefundSuccess, loading, onUpdateOrder }) {
   }
 
   if (loading) return <div className="orders-page__loading">Loading orders...</div>
-  if (!orders || orders.length === 0) return <div className="orders-page__empty">No orders found.</div>
+  if (!orders || orders.length === 0) return <div className="no-orders">No orders found.</div>
 
   return (
     <div className="orders-page">
@@ -110,19 +110,24 @@ function OrdersPage({ orders = [], onRefundSuccess, loading, onUpdateOrder }) {
                 <div className="order-card__details">
                   <hr />
 
-                  {/* Feature 6: Pricing Breakdown */}
                   <div className="details-section">
-                    <PricingBreakdown
-                      items={order.items}
-                      subtotal={order.subtotal}
-                      deliveryFee={order.delivery_fee}
-                      tax={order.tax}
-                      totalPrice={order.total_price}
-                      discountApplied={order.discount_applied}
-                    />
+                    <h4>Order Summary</h4>
+                    <ul className="items-list">
+                      {order.items?.map((item, idx) => (
+                        <li key={idx}>{item.name} <span>${item.price.toFixed(2)}</span></li>
+                      ))}
+                    </ul>
+                    <div className="calculation-box">
+                      <p>Subtotal: <span>${order.subtotal?.toFixed(2)}</span></p>
+                      <p>Delivery Fee: <span>${order.delivery_fee?.toFixed(2) ?? '5.00'}</span></p>
+                      <p>Tax: <span>${order.tax?.toFixed(2)}</span></p>
+                      {order.discount_applied > 0 && (
+                        <p className="discount-text">Promo Discount: <span>-${order.discount_applied.toFixed(2)}</span></p>
+                      )}
+                      <p className="final-total">Total: <span>${order.total_price?.toFixed(2)}</span></p>
+                    </div>
                   </div>
 
-                  {/* Promo Section */}
                   <div className="details-section promo-section">
                     <h4>Promo Code</h4>
                     <div className="promo-input-group">
@@ -138,7 +143,7 @@ function OrdersPage({ orders = [], onRefundSuccess, loading, onUpdateOrder }) {
                     {promoError && <p className="error-text">{promoError}</p>}
                   </div>
 
-                  {/* Feature 7: Payment simulation */}
+                  {/* Feature 7: Payment simulation with inline status */}
                   {order.payment_status === 'Pending' && (
                     <div className="details-section payment-section">
                       <h4>Payment</h4>
@@ -168,7 +173,6 @@ function OrdersPage({ orders = [], onRefundSuccess, loading, onUpdateOrder }) {
                     </div>
                   )}
 
-                  {/* Feature 9: Refund — pass all required props */}
                   <div className="details-section">
                     <RefundButton
                       orderId={order.id}
