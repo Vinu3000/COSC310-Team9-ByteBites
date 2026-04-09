@@ -1,15 +1,24 @@
 from pydantic import BaseModel, ConfigDict
-from typing import List
+from typing import List, Optional
 from uuid import UUID
 
-# Restaurant Response
+class MenuItemSchema(BaseModel):
+    id: int
+    name: str
+    price: float
+    model_config = ConfigDict(from_attributes=True)
+
 class RestaurantResponse(BaseModel):
     id: UUID
     name: str
+    title: str
     location: str
+    cuisine_type: str
+    category: str
+    rating: float
+    menu: List[MenuItemSchema] = [] # 确保这里有 menu
     model_config = ConfigDict(from_attributes=True)
 
-# Pagination
 class PaginatedRestaurants(BaseModel):
     items: List[RestaurantResponse]
     total: int

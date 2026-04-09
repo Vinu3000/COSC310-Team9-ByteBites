@@ -5,16 +5,34 @@ import OrdersPage from './pages/OrdersPage'
 import AdminRefundsPage from './pages/AdminRefundsPage'
 import AdminPromosPage from './pages/AdminPromosPage'
 import DiscoveryPage from './pages/DiscoveryPage'
-import LoginPage from './pages/LoginPage' // Import the new LoginPage
+import LoginPage from './pages/LoginPage'
 
 function App() {
-  const [currentPage, setCurrentPage] = useState('discovery') 
+  // Initialize state from localStorage to persist after refresh
+  const [currentPage, setCurrentPage] = useState(() => {
+    return localStorage.getItem('currentPage') || 'discovery'
+  })
+  
+  const [userRole, setUserRole] = useState(() => {
+    return localStorage.getItem('userRole') || null
+  })
+
   const [orders, setOrders] = useState([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
-  
-  // Start with null to force login
-  const [userRole, setUserRole] = useState(null) 
+
+  // Sync state changes to localStorage
+  useEffect(() => {
+    if (userRole) {
+      localStorage.setItem('userRole', userRole)
+    } else {
+      localStorage.removeItem('userRole')
+    }
+  }, [userRole])
+
+  useEffect(() => {
+    localStorage.setItem('currentPage', currentPage)
+  }, [currentPage])
 
   const fetchOrders = async () => {
     setLoading(true)
@@ -39,12 +57,15 @@ function App() {
 
   const handleLogin = (role) => {
     setUserRole(role)
-    setCurrentPage('discovery')
+    // Keep current page if it exists, otherwise go to discovery
+    const targetPage = localStorage.getItem('currentPage') || 'discovery'
+    setCurrentPage(targetPage)
   }
 
   const handleLogout = () => {
     setUserRole(null)
     setCurrentPage('discovery')
+    localStorage.clear() // Clear all persisted data on logout
   }
 
   const handleUpdateOrderPrice = (orderId, newTotal, discountAmount) => {
@@ -65,8 +86,7 @@ function App() {
     fetchOrders()
   }
 
-  // ---Authorization Guard ---
-  // If no user is logged in, show ONLY the Login Page
+  // --- Authorization Guard ---
   if (!userRole) {
     return <LoginPage onLogin={handleLogin} />
   }
@@ -84,12 +104,10 @@ function App() {
         {loading && <div className="loading">Loading...</div>}
         {error && <div className="error">Error: {error}</div>}
         
-        {/* Discovery Page */}
         {currentPage === 'discovery' && (
           <DiscoveryPage />
         )}
         
-        {/* User View: Orders Page */}
         {currentPage === 'orders' && (
           <OrdersPage 
             orders={orders} 
@@ -99,7 +117,6 @@ function App() {
           />
         )}
         
-        {/* Admin View: Refunds Page (Feat 1 Authorization) */}
         {currentPage === 'admin-refunds' && userRole === 'admin' && (
           <AdminRefundsPage 
             orders={orders}
@@ -107,12 +124,10 @@ function App() {
           />
         )}
 
-        {/* Admin View: Promos Page (Feat 1 Authorization) */}
         {currentPage === 'admin-promos' && userRole === 'admin' && (
           <AdminPromosPage />
         )}
 
-        {/* Access Denied Guard */}
         {(currentPage === 'admin-refunds' || currentPage === 'admin-promos') && userRole !== 'admin' && (
           <div className="unauthorized">
             <h2>Access Denied</h2>

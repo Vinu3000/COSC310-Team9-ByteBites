@@ -1,8 +1,18 @@
 const API_BASE = "http://localhost:8000/api/v1";
 
-export const fetchRestaurants = async (search = "") => {
-  const res = await fetch(`${API_BASE}/restaurants?q=${search}`);
-  if (!res.ok) return { items: [], total: 0 };
+export const fetchRestaurants = async (search = "", page = 1, size = 10, category = "") => {
+  const params = new URLSearchParams({
+    q: search,
+    page: page,
+    size: size,
+    category: category
+  });
+
+  const res = await fetch(`${API_BASE}/restaurants?${params.toString()}`);
+  
+  if (!res.ok) {
+    return { items: [], total: 0, page: 1, size: 10, pages: 0 };
+  }
   return res.json();
 };
 

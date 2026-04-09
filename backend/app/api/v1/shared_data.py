@@ -1,5 +1,3 @@
-# backend/app/api/v1/shared_data.py
-
 # ==========================================
 # User Identity & Roles
 # ==========================================
@@ -13,29 +11,78 @@ mock_users_db = {
 # ==========================================
 mock_restaurants_db = [
     {
-        "id": 1, 
-        "name": "Pizza Planet", 
-        "cuisine_type": "Italian", 
-        "rating": 4.8,
+        "id": 1,
+        "name": "Pizza Planet",
+        "cuisine_type": "Italian",
+        "category": "Italian",
+        "rating": 4.5,
+        "location": "UBCO North",
         "menu": [
-            {"id": 101, "name": "Margherita Pizza", "price": 15.0, "category": "Main"},
-            {"id": 102, "name": "Pepperoni Pizza", "price": 18.0, "category": "Main"},
-            {"id": 103, "name": "Garlic Bread", "price": 6.5, "category": "Side"}
+            {"id": 101, "name": "Margherita Pizza", "price": 12.99},
+            {"id": 102, "name": "Pepperoni Feast", "price": 15.50}
         ]
     },
     {
-        "id": 2, 
-        "name": "Burger Queen", 
-        "cuisine_type": "American", 
-        "rating": 4.5,
+        "id": 2,
+        "name": "Burger Queen",
+        "cuisine_type": "American",
+        "category": "American",
+        "rating": 4.2,
+        "location": "UBCO South",
         "menu": [
-            {"id": 201, "name": "Royal Cheese Burger", "price": 12.0, "category": "Main"},
-            {"id": 202, "name": "Curly Fries", "price": 4.0, "category": "Side"},
-            {"id": 203, "name": "Vanilla Shake", "price": 5.0, "category": "Drink"}
+            {"id": 201, "name": "Royal Cheese Burger", "price": 9.99},
+            {"id": 202, "name": "Crispy Fries", "price": 3.50}
+        ]
+    },
+    {
+        "id": 3,
+        "name": "Sushi Samurai",
+        "cuisine_type": "Japanese",
+        "category": "Japanese",
+        "rating": 4.8,
+        "location": "UBCO Commons",
+        "menu": [
+            {"id": 301, "name": "Salmon Nigiri", "price": 5.99},
+            {"id": 302, "name": "Dynamite Roll", "price": 11.00}
+        ]
+    },
+    {
+        "id": 4,
+        "name": "Taco Temple",
+        "cuisine_type": "Mexican",
+        "category": "Mexican",
+        "rating": 4.3,
+        "location": "UBCO North",
+        "menu": [
+            {"id": 401, "name": "Beef Tacos (3pcs)", "price": 10.50},
+            {"id": 402, "name": "Fresh Guacamole", "price": 4.99}
+        ]
+    },
+    {
+        "id": 5,
+        "name": "The Caffeine Club",
+        "cuisine_type": "Cafe",
+        "category": "Cafe",
+        "rating": 4.7,
+        "location": "Library Level 1",
+        "menu": [
+            {"id": 501, "name": "Oat Milk Latte", "price": 5.25},
+            {"id": 502, "name": "Blueberry Muffin", "price": 3.75}
+        ]
+    },
+    {
+        "id": 6,
+        "name": "Green Garden",
+        "cuisine_type": "Salad",
+        "category": "Salad",
+        "rating": 4.0,
+        "location": "Gym Hub",
+        "menu": [
+            {"id": 601, "name": "Caesar Salad", "price": 11.99},
+            {"id": 602, "name": "Power Protein Bowl", "price": 14.50}
         ]
     }
 ]
-
 
 mock_orders_db = {
     1: {
@@ -49,9 +96,9 @@ mock_orders_db = {
         "delivery_fee": 5.0,
         "tax": 2.15,
         "total_price": 28.65,
-        "status": "Preparing",        # Feature 5: Delivery Status
-        "payment_status": "Success",   # Feature 7: Payment Status
-        "refund_status": "None",       # For Admin: Refunds page
+        "status": "Preparing",        # Feature 5: Status tracking
+        "payment_status": "Success",   # Feature 7: Payment
+        "refund_status": "None",       # Feature 1: Admin capability
         "discount_applied": 0.0,
         "created_at": "2024-03-20 18:30:00"
     },
@@ -66,10 +113,59 @@ mock_orders_db = {
         "tax": 1.2,
         "total_price": 18.2,
         "status": "Pending",
-        "payment_status": "Pending",   # You can use this to test "Pay Now" button
+        "payment_status": "Pending",   # Test for "Pay Now" button
         "refund_status": "None",
         "discount_applied": 0.0,
         "created_at": "2024-03-20 19:15:00"
+    },
+    3: {
+        "id": 3,
+        "restaurant_name": "Sushi Samurai",
+        "items": [
+            {"name": "Dynamite Roll", "price": 11.0},
+            {"name": "Salmon Nigiri", "price": 5.99}
+        ],
+        "subtotal": 16.99,
+        "delivery_fee": 5.0,
+        "tax": 1.70,
+        "total_price": 23.69,
+        "status": "Delivered",
+        "payment_status": "Success",
+        "refund_status": "None",
+        "discount_applied": 0.0,
+        "created_at": "2024-03-21 12:00:00"
+    },
+    4: {
+        "id": 4,
+        "restaurant_name": "Taco Temple",
+        "items": [
+            {"name": "Beef Tacos (3pcs)", "price": 10.50}
+        ],
+        "subtotal": 10.50,
+        "delivery_fee": 5.0,
+        "tax": 1.05,
+        "total_price": 16.55,
+        "status": "Out for Delivery",
+        "payment_status": "Success",
+        "refund_status": "None",
+        "discount_applied": 5.0,       # Test for Promo applied
+        "created_at": "2024-03-21 13:45:00"
+    },
+    5: {
+        "id": 5,
+        "restaurant_name": "The Caffeine Club",
+        "items": [
+            {"name": "Oat Milk Latte", "price": 5.25}
+        ],
+        "subtotal": 5.25,
+        "delivery_fee": 2.0,
+        "tax": 0.52,
+        "total_price": 7.77,
+        "status": "Cancelled",
+        "payment_status": "Refunded",  # Test for Admin Refund logic
+        "refund_status": "Completed",
+        "discount_applied": 0.0,
+        "created_at": "2024-03-21 09:10:00"
     }
 }
 
@@ -82,7 +178,7 @@ mock_notifications_db = [
 ]
 
 # ==========================================
-# Feature 9: Claire's Promo Engine (Your Speciality)
+# Promo Engine
 # ==========================================
 mock_promos_db = {
     "STUDENT5": {
