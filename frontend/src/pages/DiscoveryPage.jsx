@@ -1,6 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { fetchRestaurants } from '../api/restaurants';
+import { placeOrder } from '../api/orders';
+import Cart from '../components/Cart';
 import '../styles/DiscoveryPage.css';
+import '../styles/Cart.css';
 
 function DiscoveryPage() {
   const [restaurants, setRestaurants] = useState([]);
@@ -9,6 +12,10 @@ function DiscoveryPage() {
   const [selectedRes, setSelectedRes] = useState(null);
   const [loadingMenu, setLoadingMenu] = useState(false);
 
+  // Cart State
+  const [cart, setCart] = useState([]);
+  const [isCartOpen, setIsCartOpen] = useState(false);
+
   // Pagination State
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -16,11 +23,8 @@ function DiscoveryPage() {
 
   const categories = ["Italian", "American", "Japanese", "Mexican", "Cafe", "Salad"];
 
-  useEffect(() => {
-    loadData(searchTerm, selectedCategory, currentPage);
-  }, [currentPage, selectedCategory]);
-
-  const loadData = async (query = "", category = "", page = 1) => {
+  // Fetch data from API
+  const loadData = useCallback(async (query = "", category = "", page = 1) => {
     try {
       const data = await fetchRestaurants(query, page, pageSize, category);
       if (data && data.items) {
@@ -34,18 +38,19 @@ function DiscoveryPage() {
       console.error("Failed to load data:", err);
       setRestaurants([]);
     }
-  };
+  }, []);
 
-  const handleSearch = (e) => {
-    const value = e.target.value;
-    setSearchTerm(value);
-    setCurrentPage(1); 
-    loadData(value, selectedCategory, 1);
-  };
+  // Debounced Search Effect
+  useEffect(() => {
+    const delayDebounceFn = setTimeout(() => {
+      loadData(searchTerm, selectedCategory, currentPage);
+    }, 300);
+
+    return () => clearTimeout(delayDebounceFn);
+  }, [searchTerm, selectedCategory, currentPage, loadData]);
 
   const handleCategoryClick = (cat) => {
-    const newCategory = selectedCategory === cat ? "" : cat;
-    setSelectedCategory(newCategory);
+    setSelectedCategory(prev => (prev === cat ? "" : cat));
     setCurrentPage(1); 
   };
 
@@ -62,16 +67,80 @@ function DiscoveryPage() {
     }
   };
 
+  // Cart Logic: Add / Increment
+  const addToCart = (item) => {
+    setCart(prevCart => {
+      // Logic: Only one restaurant per order
+      if (prevCart.length > 0 && prevCart[0].restaurantId !== selectedRes.id) {
+        const confirmClear = window.confirm(
+          "You can only order from one restaurant at a time. Clear cart and add this item?"
+        );
+        if (!confirmClear) return prevCart;
+        return [{ ...item, quantity: 1, restaurantId: selectedRes.id }];
+      }
+
+      const existingItem = prevCart.find(i => i.id === item.id);
+      if (existingItem) {
+        return prevCart.map(i => i.id === item.id ? { ...i, quantity: i.quantity + 1 } : i);
+      }
+      return [...prevCart, { ...item, quantity: 1, restaurantId: selectedRes.id }];
+    });
+  };
+
+  // Cart Logic: Remove / Decrement
+  const removeFromCart = (itemId) => {
+    setCart(prevCart => {
+      const existingItem = prevCart.find(i => i.id === itemId);
+      if (existingItem && existingItem.quantity > 1) {
+        return prevCart.map(i => i.id === itemId ? { ...i, quantity: i.quantity - 1 } : i);
+      }
+      return prevCart.filter(i => i.id !== itemId);
+    });
+  };
+
+  // Cart Logic: Clear
+  const clearCart = () => {
+    if (window.confirm("Are you sure you want to clear your cart?")) {
+      setCart([]);
+    }
+  };
+
+  // Place Order API Call
+  const handlePlaceOrder = async () => {
+    if (cart.length === 0) return;
+
+    try {
+      const orderData = {
+        restaurant_id: cart[0].restaurantId,
+        items: cart.map(i => ({ menu_item_id: i.id, quantity: i.quantity })),
+        total_amount: cart.reduce((sum, i) => sum + i.price * i.quantity, 0),
+        status: "completed" 
+      };
+
+      await placeOrder(orderData);
+      alert("Order placed successfully! This order is now finalized.");
+      setCart([]); 
+      setIsCartOpen(false);
+    } catch (err) {
+      alert(`Order Failed: ${err.message}`);
+    }
+  };
+
   return (
     <div className="discovery-container">
+      {/* Floating Cart Trigger */}
+      <div className="cart-trigger" onClick={() => setIsCartOpen(true)}>
+        🛒 <span>{cart.reduce((sum, i) => sum + i.quantity, 0)}</span>
+      </div>
+
       <h1>Explore Restaurants</h1>
       
       <input 
         type="text" 
         className="search-bar" 
-        placeholder="Search for pizza, burgers..." 
+        placeholder="Search for restaurants or cuisines..." 
         value={searchTerm}
-        onChange={handleSearch}
+        onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }}
       />
 
       <div className="category-filter">
@@ -102,7 +171,7 @@ function DiscoveryPage() {
             </div>
           ))
         ) : (
-          <p className="no-data">No restaurants found in this category.</p>
+          <p className="no-data">No restaurants found.</p>
         )}
       </div>
 
@@ -114,6 +183,7 @@ function DiscoveryPage() {
         </div>
       )}
 
+      {/* Menu Modal */}
       {selectedRes && (
         <div className="modal-overlay" onClick={() => setSelectedRes(null)}>
           <div className="modal-content" onClick={e => e.stopPropagation()}>
@@ -122,21 +192,46 @@ function DiscoveryPage() {
               <p>Loading menu...</p>
             ) : (
               <div className="menu-items">
-                {selectedRes.menu?.map(item => (
-                  <div key={item.id} className="menu-item">
-                    <div className="item-info">
-                      <strong>{item.name}</strong>
-                      <span>${item.price?.toFixed(2)}</span>
-                    </div>
-                    <button onClick={() => alert(`Added ${item.name} to cart!`)}>Add</button>
-                  </div>
-                ))}
+                {selectedRes.menu?.length > 0 ? (
+                  selectedRes.menu.map(item => {
+                    const cartItem = cart.find(i => i.id === item.id);
+                    return (
+                      <div key={item.id} className="menu-item">
+                        <div className="item-info">
+                          <strong>{item.name}</strong>
+                          <span>${item.price?.toFixed(2)}</span>
+                        </div>
+                        
+                        {/* Stepper Logic: Add/Remove buttons */}
+                        {cartItem ? (
+                          <div className="menu-qty-controls">
+                            <button className="qty-btn" onClick={() => removeFromCart(item.id)}>-</button>
+                            <span className="qty-count">{cartItem.quantity}</span>
+                            <button className="qty-btn" onClick={() => addToCart(item)}>+</button>
+                          </div>
+                        ) : (
+                          <button className="add-btn" onClick={() => addToCart(item)}>Add</button>
+                        )}
+                      </div>
+                    );
+                  })
+                ) : <p>No items available.</p>}
               </div>
             )}
             <button className="close-btn" onClick={() => setSelectedRes(null)}>Close</button>
           </div>
         </div>
       )}
+
+      {/* Cart Sidebar Component */}
+      <Cart 
+        cart={cart} 
+        isOpen={isCartOpen} 
+        onClose={() => setIsCartOpen(false)} 
+        onPlaceOrder={handlePlaceOrder} 
+        onRemoveItem={removeFromCart}
+        onClearCart={clearCart}
+      />
     </div>
   );
 }
