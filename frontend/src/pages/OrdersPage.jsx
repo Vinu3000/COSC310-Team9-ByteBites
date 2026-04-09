@@ -25,7 +25,7 @@ function OrdersPage({ orders = [], onRefundSuccess, loading, onUpdateOrder }) {
   const handleApplyPromo = async (orderId, currentSubtotal) => {
     setPromoError("")
     try {
-      const response = await fetch("http://localhost:8000/api/v1/promos/apply", {
+      const response = await fetch("/api/v1/promos/apply", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ subtotal: currentSubtotal, code: promoCode })
@@ -45,7 +45,7 @@ function OrdersPage({ orders = [], onRefundSuccess, loading, onUpdateOrder }) {
   const handleSimulatePayment = async (orderId) => {
     setPaymentStates(prev => ({ ...prev, [orderId]: { status: 'processing', message: '' } }))
     try {
-      const response = await fetch(`http://localhost:8000/api/v1/orders/${orderId}/pay`, {
+      const response = await fetch(`/api/v1/orders/${orderId}/pay`, {
         method: "POST",
         headers: { "Content-Type": "application/json" }
       })
