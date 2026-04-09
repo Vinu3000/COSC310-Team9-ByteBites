@@ -4,7 +4,11 @@ from app.api.v1.shared_data import mock_orders_db
 
 
 class RefundService:
-    ALLOWED_ORDER_STATUSES = {OrderStatus.PENDING, OrderStatus.PREPARING}
+    # Use enum values because mock_orders_db stores strings like "Pending"
+    ALLOWED_ORDER_STATUSES = {
+        OrderStatus.PENDING.value,
+        OrderStatus.PREPARING.value,
+    }
 
     def _get_order(self, order_id):
         """Look up order by id, handling both int and string keys."""
@@ -62,7 +66,7 @@ class RefundService:
         if not order:
             raise HTTPException(status_code=404, detail="Order not found")
 
-        if order.get("refund_status") != "Requested":
+        if str(order.get("refund_status")).strip().lower() != "requested":
             raise HTTPException(
                 status_code=400,
                 detail="No pending refund request for this order",
@@ -70,7 +74,7 @@ class RefundService:
 
         order["refund_status"] = "Approved"
         order["payment_status"] = "Refunded"
-        order["status"] = OrderStatus.CANCELLED
+        order["status"] = OrderStatus.CANCELLED.value
 
         return {
             "order_id": order["id"],
@@ -86,7 +90,7 @@ class RefundService:
         if not order:
             raise HTTPException(status_code=404, detail="Order not found")
 
-        if order.get("refund_status") != "Requested":
+        if str(order.get("refund_status")).strip().lower() != "requested":
             raise HTTPException(
                 status_code=400,
                 detail="No pending refund request for this order",
