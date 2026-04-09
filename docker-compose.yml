@@ -15,11 +15,6 @@ services:
     build: ./frontend
     container_name: bytebites-frontend
     ports:
-      - "5173:5173"
-    volumes:
-      - ./frontend:/app
-      - /app/node_modules 
-    environment:
-      - VITE_API_URL=http://localhost:8000/api/v1
+      - "3000:80"
     depends_on:
       - backend
