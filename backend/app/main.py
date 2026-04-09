@@ -49,6 +49,12 @@ app.include_router(refunds_router)
 app.include_router(refunds_router, prefix="/api/v1")  # frontend
 app.include_router(refunds_router)                   # tests
 
+# Frontend uses these
+app.include_router(refunds_router, prefix="/api/v1")
+
+# Existing backend tests use these
+app.include_router(refunds_router)
+
 @app.get("/")
 def home():
     return {"message": "ByteBites API is running!"}
