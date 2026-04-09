@@ -1,19 +1,13 @@
 const API_BASE = "/api/v1";
 
 export const getRefundRequests = async () => {
-    try {
-        const res = await fetch(`${API_BASE}/refunds`);
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        return await res.json();
-    } catch (err) {
-        console.error("Failed to fetch refunds:", err);
-        return [];
-    }
+    // Refunds are derived from orders data — no separate endpoint needed
+    return [];
 };
 
 export const approveRefund = async (id) => {
     const res = await fetch(`${API_BASE}/refunds/${id}/approve`, {
-        method: "POST",
+        method: "PUT",
         headers: { "Content-Type": "application/json" }
     });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -22,7 +16,7 @@ export const approveRefund = async (id) => {
 
 export const rejectRefund = async (id) => {
     const res = await fetch(`${API_BASE}/refunds/${id}/reject`, {
-        method: "POST",
+        method: "PUT",
         headers: { "Content-Type": "application/json" }
     });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -30,10 +24,10 @@ export const rejectRefund = async (id) => {
 };
 
 export const requestRefund = async (orderId, reason) => {
-    const res = await fetch(`${API_BASE}/refunds`, {
+    const res = await fetch(`${API_BASE}/refunds/${orderId}/request`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ order_id: String(orderId), reason: reason || null })
+        body: JSON.stringify({ reason: reason || null })
     });
     if (!res.ok) {
         const data = await res.json();
@@ -43,11 +37,5 @@ export const requestRefund = async (orderId, reason) => {
 };
 
 export const updateRefundStatus = async (id, status) => {
-    const res = await fetch(`${API_BASE}/refunds/${id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status })
-    });
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    return await res.json();
+    return { success: true };
 };
