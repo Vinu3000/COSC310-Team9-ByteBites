@@ -13,6 +13,7 @@ mock_restaurants_db = [
     {
         "id": 1,
         "name": "Pizza Planet",
+        "title": "Pizza Planet",
         "cuisine_type": "Italian",
         "category": "Italian",
         "rating": 4.5,
@@ -25,6 +26,7 @@ mock_restaurants_db = [
     {
         "id": 2,
         "name": "Burger Queen",
+        "title": "Burger Queen",
         "cuisine_type": "American",
         "category": "American",
         "rating": 4.2,
@@ -37,6 +39,7 @@ mock_restaurants_db = [
     {
         "id": 3,
         "name": "Sushi Samurai",
+        "title": "Sushi Samurai",
         "cuisine_type": "Japanese",
         "category": "Japanese",
         "rating": 4.8,
@@ -49,6 +52,7 @@ mock_restaurants_db = [
     {
         "id": 4,
         "name": "Taco Temple",
+        "title": "Taco Temple",
         "cuisine_type": "Mexican",
         "category": "Mexican",
         "rating": 4.3,
@@ -61,6 +65,7 @@ mock_restaurants_db = [
     {
         "id": 5,
         "name": "The Caffeine Club",
+        "title": "The Caffeine Club",
         "cuisine_type": "Cafe",
         "category": "Cafe",
         "rating": 4.7,
@@ -73,6 +78,7 @@ mock_restaurants_db = [
     {
         "id": 6,
         "name": "Green Garden",
+        "title": "Green Garden",
         "cuisine_type": "Salad",
         "category": "Salad",
         "rating": 4.0,
@@ -84,6 +90,9 @@ mock_restaurants_db = [
     }
 ]
 
+# ==========================================
+# Orders
+# ==========================================
 mock_orders_db = {
     1: {
         "id": 1,
@@ -96,9 +105,9 @@ mock_orders_db = {
         "delivery_fee": 5.0,
         "tax": 2.15,
         "total_price": 28.65,
-        "status": "Preparing",        # Feature 5: Status tracking
-        "payment_status": "Success",   # Feature 7: Payment
-        "refund_status": "None",       # Feature 1: Admin capability
+        "status": "Preparing",
+        "payment_status": "Success",
+        "refund_status": "None",
         "discount_applied": 0.0,
         "created_at": "2024-03-20 18:30:00"
     },
@@ -113,7 +122,7 @@ mock_orders_db = {
         "tax": 1.2,
         "total_price": 18.2,
         "status": "Pending",
-        "payment_status": "Pending",   # Test for "Pay Now" button
+        "payment_status": "Pending",
         "refund_status": "None",
         "discount_applied": 0.0,
         "created_at": "2024-03-20 19:15:00"
@@ -148,7 +157,7 @@ mock_orders_db = {
         "status": "Out for Delivery",
         "payment_status": "Success",
         "refund_status": "None",
-        "discount_applied": 5.0,       # Test for Promo applied
+        "discount_applied": 5.0,
         "created_at": "2024-03-21 13:45:00"
     },
     5: {
@@ -162,7 +171,7 @@ mock_orders_db = {
         "tax": 0.52,
         "total_price": 7.77,
         "status": "Cancelled",
-        "payment_status": "Refunded",  # Test for Admin Refund logic
+        "payment_status": "Refunded",
         "refund_status": "Completed",
         "discount_applied": 0.0,
         "created_at": "2024-03-21 09:10:00"
@@ -173,8 +182,22 @@ mock_orders_db = {
 # Feature 8: Notifications
 # ==========================================
 mock_notifications_db = [
-    {"id": 1, "user_id": 2, "message": "Your order #1 is being prepared!", "is_read": False},
-    {"id": 2, "user_id": 2, "message": "Welcome to ByteBites!", "is_read": True}
+    {
+        "id": 1, 
+        "user_id": 2, 
+        "order_id": 1, 
+        "message": "Your order #1 is being prepared!", 
+        "is_read": False,
+        "timestamp": "2024-03-21T18:30:00"
+    },
+    {
+        "id": 2, 
+        "user_id": 2, 
+        "order_id": 2,  # Changed from None to 2 to satisfy the integer requirement
+        "message": "Welcome to ByteBites!", 
+        "is_read": True,
+        "timestamp": "2024-03-21T09:00:00"
+    }
 ]
 
 # ==========================================
@@ -202,7 +225,7 @@ mock_promos_db = {
         "code": "WELCOME", 
         "discount_value": 2.0, 
         "min_spend": 10.0, 
-        "is_active": False, # Start as disabled to show Admin Control
+        "is_active": False,
         "description": "New user discount"
     }
 }
