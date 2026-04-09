@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import NotificationBell from './NotificationBell';
 import '../styles/Navbar.css';
 
 function Navbar({ currentPage, onNavigate, userRole, onLogin, onLogout }) {
@@ -57,6 +58,8 @@ function Navbar({ currentPage, onNavigate, userRole, onLogin, onLogout }) {
             </>
           )}
         </ul>
+
+        {userRole && <NotificationBell />}
 
         <div className="navbar__user">
           {!userRole ? (
